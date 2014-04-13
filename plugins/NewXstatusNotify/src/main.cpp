@@ -290,13 +290,6 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new) 
 	return ret;
 }
 
-BOOL FreeSmiStr(STATUSMSGINFO *smi)
-{
-	mir_free(smi->newstatusmsg);
-	mir_free(smi->oldstatusmsg);
-	return 0;
-}
-
 TCHAR* AddCR(const TCHAR *statusmsg)
 {
 	const TCHAR *found;
@@ -652,125 +645,109 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 
 int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 {
-	if (!strcmp(cws->szSetting, "Status")) {
-		WORD newStatus = cws->value.wVal;
-		if (newStatus < ID_STATUS_MIN || newStatus > ID_STATUS_MAX)
+	WORD newStatus = cws->value.wVal;
+	if (newStatus < ID_STATUS_MIN || newStatus > ID_STATUS_MAX)
+		return 0;
+
+	char *szProto = GetContactProto(hContact);
+	if (strcmp(cws->szModule, szProto))
+		return 0;
+
+	WORD oldStatus = DBGetContactSettingRangedWord(hContact, "UserOnline", "OldStatus", ID_STATUS_OFFLINE, ID_STATUS_MIN, ID_STATUS_MAX);
+	if (oldStatus == newStatus)
+		return 0;
+
+	//If we get here, the two statuses differ, so we can proceed.
+	db_set_w(hContact, "UserOnline", "OldStatus", newStatus);
+
+	//If *Miranda* ignores the UserOnline event, exit!
+	if (CallService(MS_IGNORE_ISIGNORED, hContact, IGNOREEVENT_USERONLINE))
+		return 0;
+
+	//If we get here, we have to notify the Hooks.
+	ContactStatusChanged(hContact, oldStatus, newStatus);
+	NotifyEventHooks(hHookContactStatusChanged, hContact, (LPARAM)MAKELPARAM(oldStatus, newStatus));
+	return 1;
+}
+
+int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
+{
+	if (SkipHiddenContact(hContact))
+		return 0;
+
+	char *szProto = GetContactProto(hContact);
+	if (szProto == NULL)
+		return 0;
+
+	char dbSetting[128];
+	mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", szProto);
+	if (!db_get_b(NULL, MODULE, dbSetting, 1))
+		return 0;
+
+	//don't show popup when mradio connecting and disconnecting
+	if (_stricmp(szProto, "mRadio") == 0 && !cws->value.type == DBVT_DELETED) {
+		TCHAR buf[MAX_PATH];
+		mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("connecting"));
+		ptrA pszUtf(mir_utf8encodeT(buf));
+		mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("aborting"));
+		ptrA pszUtf2(mir_utf8encodeT(buf));
+		mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("playing"));
+		ptrA pszUtf3(mir_utf8encodeT(buf));
+		if (_stricmp(cws->value.pszVal, pszUtf) == 0 || _stricmp(cws->value.pszVal, pszUtf2) == 0 || _stricmp(cws->value.pszVal, pszUtf3) == 0)
 			return 0;
-
-		char *proto = GetContactProto(hContact);
-		if (strcmp(cws->szModule,proto))
-			return 0;
-
-		WORD oldStatus = DBGetContactSettingRangedWord(hContact, "UserOnline", "OldStatus", ID_STATUS_OFFLINE, ID_STATUS_MIN, ID_STATUS_MAX);
-		if (oldStatus == newStatus)
-			return 0;
-
-		//If we get here, the two stauses differ, so we can proceed.
-		db_set_w(hContact, "UserOnline", "OldStatus", newStatus);
-
-		//If *Miranda* ignores the UserOnline event, exit!
-		if (CallService(MS_IGNORE_ISIGNORED, hContact, IGNOREEVENT_USERONLINE))
-			return 0;
-
-		//If we get here, we have to notify the Hooks.
-		ContactStatusChanged(hContact, oldStatus, newStatus);
-		NotifyEventHooks(hHookContactStatusChanged, hContact, (LPARAM)MAKELPARAM(oldStatus, newStatus));
-		return 1;
 	}
-	else if (!strcmp(cws->szModule, "CList") && !strcmp(cws->szSetting, "StatusMsg")) {
-		if (SkipHiddenContact(hContact))
-			return 0;
 
-		char *proto = GetContactProto(hContact);
-		if (!proto)
-			return 0;
-
-		char dbSetting[128];
-		mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", proto);
-		if (!db_get_b(NULL, MODULE, dbSetting, 1))
-			return 0;
-
-		BOOL retem = TRUE, rettime = TRUE;
+	if (szProto != NULL && CallProtoService(szProto, PS_GETSTATUS, 0, 0) != ID_STATUS_OFFLINE) {
 		STATUSMSGINFO smi;
-		smi.proto = proto;
-
-		//don't show popup when mradio connecting and disconnecting
-		if (_stricmp(smi.proto, "mRadio") == 0 && !cws->value.type == DBVT_DELETED) {
-			TCHAR buf[MAX_PATH];
-			mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("connecting"));
-			ptrA pszUtf(mir_utf8encodeT(buf));
-			mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("aborting"));
-			ptrA pszUtf2(mir_utf8encodeT(buf));
-			mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("playing"));
-			ptrA pszUtf3(mir_utf8encodeT(buf));
-			if (_stricmp(cws->value.pszVal, pszUtf) == 0 || _stricmp(cws->value.pszVal, pszUtf2) == 0 || _stricmp(cws->value.pszVal, pszUtf3) == 0)
-				return 0;
-		}
-
-		if (smi.proto != NULL && CallProtoService(smi.proto, PS_GETSTATUS, 0, 0) != ID_STATUS_OFFLINE) {
-			smi.hContact = hContact;
-			smi.compare = CompareStatusMsg(&smi, cws);
-			if ((smi.compare == 0) || (opt.IgnoreEmpty && (smi.compare == 2)))
-				return FreeSmiStr(&smi);
-
-			if (cws->value.type == DBVT_DELETED)
-				db_unset(smi.hContact, "UserOnline", "OldStatusMsg");
-			else
-				db_set(smi.hContact, "UserOnline", "OldStatusMsg", &cws->value);
-
-			smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
-
-			if (opt.IgnoreEmpty && (smi.compare == 2))
-				retem = FALSE;
-			else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PopupOnConnect)
-				rettime = FALSE;
-
-			char status[8];
-			mir_snprintf(status, SIZEOF(status), "%d", IDC_CHK_STATUS_MESSAGE);
-			if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && retem && rettime) {
-				char* protoname = (char*)CallService(MS_PROTO_GETCONTACTBASEACCOUNT, (WPARAM)smi.hContact, 0);
-				PROTOACCOUNT *pdescr = ProtoGetAccount(protoname);
-				protoname = mir_t2a(pdescr->tszAccountName);
-				protoname = (char*)mir_realloc(protoname, lstrlenA(protoname) + lstrlenA("_TSMChange") + 1);
-				lstrcatA(protoname, "_TSMChange");
-				TCHAR *str;
-				DBVARIANT dbVar = {0};
-				if (!db_get_ts(NULL, MODULE, protoname, &dbVar)) {
-					str = GetStr(&smi, dbVar.ptszVal);
-					db_free(&dbVar);
-				}
-				else
-					str = GetStr(&smi, TranslateT(DEFAULT_POPUP_STATUSMESSAGE));
-				mir_free(protoname);
-
-				POPUPDATAT ppd = {0};
-				ppd.lchContact = smi.hContact;
-				ppd.lchIcon = LoadSkinnedProtoIcon(smi.proto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE));
-				lstrcpyn(ppd.lptzContactName, smi.cust, MAX_CONTACTNAME);
-				lstrcpyn(ppd.lptzText, str, MAX_SECONDLINE);
-				switch (opt.Colors) {
-				case POPUP_COLOR_OWN:
-					ppd.colorBack = StatusList[Index(db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE))].colorBack;
-					ppd.colorText = StatusList[Index(db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE))].colorText;
-					break;
-				case POPUP_COLOR_WINDOWS:
-					ppd.colorBack = GetSysColor(COLOR_BTNFACE);
-					ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
-					break;
-				case POPUP_COLOR_POPUP:
-					ppd.colorBack = ppd.colorText = 0;
-					break;
-				}
-				ppd.PluginWindowProc = PopupDlgProc;
-				ppd.PluginData = NULL;
-				ppd.iSeconds = opt.PopupTimeout;
-				PUAddPopupT(&ppd);
-				mir_free(str);
-			}
+		BOOL retempty = TRUE, rettime = TRUE;
+		smi.proto = szProto;
+		smi.hContact = hContact;
+		smi.compare = CompareStatusMsg(&smi, cws);
+		if ((smi.compare == 0) || (opt.IgnoreEmpty && (smi.compare == 2))) {
 			mir_free(smi.newstatusmsg);
 			mir_free(smi.oldstatusmsg);
 			return 1;
 		}
+
+		if (cws->value.type == DBVT_DELETED)
+			db_unset(smi.hContact, "UserOnline", "OldStatusMsg");
+		else
+			db_set(smi.hContact, "UserOnline", "OldStatusMsg", &cws->value);
+
+		smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
+
+		if (opt.IgnoreEmpty && (smi.compare == 2))
+			retempty = FALSE;
+		else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PopupOnConnect)
+			rettime = FALSE;
+
+		char status[8];
+		mir_snprintf(status, SIZEOF(status), "%d", IDC_CHK_STATUS_MESSAGE);
+		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && retempty && rettime) {
+			TCHAR *str;
+			DBVARIANT dbVar = {0};
+
+			if (smi.compare == 2) {
+				if (!db_get_ts(NULL, MODULE, "TPopupSMRemove", &dbVar))
+					str = GetStr(&smi, dbVar.ptszVal);
+				else
+					str = GetStr(&smi, TranslateT(DEFAULT_POPUP_SMREMOVE));
+			}
+			else {
+				if (!db_get_ts(NULL, MODULE, "TPopupSMChange", &dbVar))
+					str = GetStr(&smi, dbVar.ptszVal);
+				else
+					str = GetStr(&smi, TranslateT(DEFAULT_POPUP_SMCHANGE));
+			}
+			db_free(&dbVar);
+
+			ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
+
+			mir_free(str);
+		}
+		mir_free(smi.newstatusmsg);
+		mir_free(smi.oldstatusmsg);
+		return 1;
 	}
 	return 0;
 }
@@ -787,9 +764,16 @@ int ContactSettingChanged(WPARAM hContact, LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *)lParam;
 	if (db_get_w(hContact, szProto, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
 		if (ProcessExtraStatus(cws, hContact))
-			return 0;
+			return 1;
 
-	ProcessStatus(cws, hContact);
+	if (!strcmp(cws->szSetting, "Status"))
+		if (ProcessStatus(cws, hContact))
+			return 1;
+
+	if (!strcmp(cws->szModule, "CList") && !strcmp(cws->szSetting, "StatusMsg"))
+		if (ProcessStatusMessage(cws, hContact))
+			return 1;
+
 	return 0;
 }
 

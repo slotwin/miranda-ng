@@ -49,6 +49,7 @@ static struct {
 	LPGENT("Do nothing"), PCA_DONOTHING
 };
 
+void ShowChangePopup(MCONTACT hContact, char *szProto, WORD newStatus, TCHAR *stzText);
 LRESULT CALLBACK PopupDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 #endif

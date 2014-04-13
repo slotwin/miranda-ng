@@ -21,6 +21,52 @@
 
 #include "common.h"
 
+void ShowChangePopup(MCONTACT hContact, char *szProto, WORD newStatus, TCHAR *stzText)
+{
+	POPUPDATAT ppd = {0};
+	ppd.lchContact = hContact;
+	ppd.lchIcon = LoadSkinnedProtoIcon(szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE));
+	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
+
+	// add group name to popup title
+	if (opt.ShowGroup) {
+		DBVARIANT dbv;
+		if (!db_get_ts(hContact, "CList", "Group", &dbv)) {
+			_tcsncat(ppd.lptzContactName, _T(" ("), MAX_CONTACTNAME);
+			_tcsncat(ppd.lptzContactName, dbv.ptszVal, MAX_CONTACTNAME);
+			_tcsncat(ppd.lptzContactName, _T(")"), MAX_CONTACTNAME);
+			db_free(&dbv);
+		}
+	}
+
+	_tcsncpy(ppd.lptzText, stzText, MAX_SECONDLINE);
+
+	switch (opt.Colors) {
+	case POPUP_COLOR_OWN:
+		ppd.colorBack = StatusList[Index(newStatus)].colorBack;
+		ppd.colorText = StatusList[Index(newStatus)].colorText;
+		break;
+	case POPUP_COLOR_WINDOWS:
+		ppd.colorBack = GetSysColor(COLOR_BTNFACE);
+		ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
+		break;
+	case POPUP_COLOR_POPUP:
+		ppd.colorBack = ppd.colorText = 0;
+		break;
+	}
+
+	ppd.PluginWindowProc = PopupDlgProc;
+
+//	PLUGINDATA *pdp = (PLUGINDATA *)mir_calloc(sizeof(PLUGINDATA));
+//	pdp->oldStatus = oldStatus;
+//	pdp->newStatus = newStatus;
+//	pdp->hAwayMsgHook = NULL;
+//	pdp->hAwayMsgProcess = NULL;
+	ppd.PluginData = NULL/*pdp*/;
+	ppd.iSeconds = opt.PopupTimeout;
+	PUAddPopupT(&ppd);
+}
+
 static int AwayMsgHook(WPARAM wParam, LPARAM lParam, LPARAM pObj)
 {
 	PLUGINDATA *pdp = (PLUGINDATA*)pObj;

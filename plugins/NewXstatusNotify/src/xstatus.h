@@ -51,6 +51,8 @@
 #define DEFAULT_POPUP_CHANGEMSG		TranslateT("changed %N message to:%D%I") 
 #define DEFAULT_POPUP_REMOVE		TranslateT("removed %N") 
 #define DEFAULT_POPUP_STATUSMESSAGE	LPGEN("changed status message to %n")
+#define DEFAULT_POPUP_SMCHANGE		LPGEN("changed status message to %n")
+#define DEFAULT_POPUP_SMREMOVE		LPGEN("removed status message")
 
 #define DEFAULT_LOG_DELIMITER		_T(": ")
 #define DEFAULT_LOG_NEW				TranslateT("changed %N @ %T%D%I") 
