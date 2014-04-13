@@ -380,7 +380,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 							if (opt.ShowStatus) {
 								if (opt.UseAlternativeText == 1)
-									_tcscpy(ppd.lptzText, StatusList[Index(status)].lpzUStatusText);
+									_tcscpy(ppd.lptzText, _tcsninc(StatusList[Index(status)].lpzUStatusText, 4));
 								else
 									_tcscpy(ppd.lptzText, StatusList[Index(status)].lpzStandardText);
 

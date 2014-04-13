@@ -615,17 +615,18 @@ void GetStatusText(MCONTACT hContact, WORD newStatus, WORD oldStatus, TCHAR *stz
 	if (opt.UseAlternativeText) {
 		switch (GetGender(hContact)) {
 		case GENDER_MALE:
-			_tcsncpy(stzStatusText, StatusList[Index(newStatus)].lpzMStatusText, MAX_STATUSTEXT);
+			_tcsncpy(stzStatusText, _tcsninc(StatusList[Index(newStatus)].lpzMStatusText, 4), MAX_STATUSTEXT);
 			break;
 		case GENDER_FEMALE:
-			_tcsncpy(stzStatusText, StatusList[Index(newStatus)].lpzFStatusText, MAX_STATUSTEXT);
+			_tcsncpy(stzStatusText, _tcsninc(StatusList[Index(newStatus)].lpzFStatusText, 4), MAX_STATUSTEXT);
 			break;
 		case GENDER_UNSPECIFIED:
-			_tcsncpy(stzStatusText, StatusList[Index(newStatus)].lpzUStatusText, MAX_STATUSTEXT);
+			_tcsncpy(stzStatusText, _tcsninc(StatusList[Index(newStatus)].lpzUStatusText, 4), MAX_STATUSTEXT);
 			break;
 		}
 	}
-	else _tcsncpy(stzStatusText, StatusList[Index(newStatus)].lpzStandardText, MAX_STATUSTEXT);
+	else
+		_tcsncpy(stzStatusText, StatusList[Index(newStatus)].lpzStandardText, MAX_STATUSTEXT);
 
 	if (opt.ShowPreviousStatus) {
 		TCHAR buff[MAX_STATUSTEXT];
@@ -737,7 +738,7 @@ void PlayChangeSound(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		SkinPlaySound(StatusList[Index(newStatus)].lpzSkinSoundName);
 }
 
-int ContactStatusChanged(MCONTACT hContact, WORD oldStatus,WORD newStatus)
+int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 {
 	bool bEnablePopup = true, bEnableSound = true;
 
@@ -822,7 +823,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus,WORD newStatus)
 
 	if (opt.LogToDB && (!opt.CheckMessageWindow || CheckMsgWnd(hContact))) {
 		TCHAR stzStatusText[MAX_SECONDLINE] = {0};
-		GetStatusText(hContact,newStatus,oldStatus,stzStatusText);
+		GetStatusText(hContact, newStatus, oldStatus, stzStatusText);
 		char *blob = mir_utf8encodeT(stzStatusText);
 
 		DBEVENTINFO dbei = {0};
@@ -906,7 +907,7 @@ void InitStatusList()
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) feels talkative!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("Free for chat"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserFreeForChat", MAX_SKINSOUNDNAME);
-	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Free For Chat"), MAX_SKINSOUNDDESC);
+	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Free for chat"), MAX_SKINSOUNDDESC);
 	lstrcpyn(StatusList[index].lpzSkinSoundFile, _T("free4chat.wav"), MAX_PATH);
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40077bg", COLOR_BG_AVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40077tx", COLOR_TX_DEFAULT);
@@ -915,9 +916,9 @@ void InitStatusList()
 	index = Index(ID_STATUS_AWAY);
 	StatusList[index].ID = ID_STATUS_AWAY;
 	StatusList[index].icon = SKINICON_STATUS_AWAY;
-	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) went Away"), MAX_STATUSTEXT);
-	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) went Away"), MAX_STATUSTEXT);
-	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) went Away"), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) went away"), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) went away"), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) went away"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("Away"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserAway", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Away"), MAX_SKINSOUNDDESC);
@@ -934,7 +935,7 @@ void InitStatusList()
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) isn't there anymore!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("NA"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserNA", MAX_SKINSOUNDNAME);
-	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Not Available"), MAX_SKINSOUNDDESC);
+	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Not available"), MAX_SKINSOUNDDESC);
 	lstrcpyn(StatusList[index].lpzSkinSoundFile, _T("na.wav"), MAX_PATH);
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40075bg", COLOR_BG_NAVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40075tx", COLOR_TX_DEFAULT);
@@ -943,9 +944,9 @@ void InitStatusList()
 	index = Index(ID_STATUS_OCCUPIED);
 	StatusList[index].ID = ID_STATUS_OCCUPIED;
 	StatusList[index].icon = SKINICON_STATUS_OCCUPIED;
-	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) has something else to do."), MAX_STATUSTEXT);
-	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) has something else to do."), MAX_STATUSTEXT);
-	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) has something else to do."), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) has something else to do"), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) has something else to do"), MAX_STATUSTEXT);
+	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) has something else to do"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("Occupied"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserOccupied", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Occupied"), MAX_SKINSOUNDDESC);
@@ -962,12 +963,12 @@ void InitStatusList()
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) doesn't want to be disturbed!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("DND"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserDND", MAX_SKINSOUNDNAME);
-	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Do Not Disturb"), MAX_SKINSOUNDDESC);
+	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Do not disturb"), MAX_SKINSOUNDDESC);
 	lstrcpyn(StatusList[index].lpzSkinSoundFile, _T("dnd.wav"), MAX_PATH);
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40074bg", COLOR_BG_NAVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40074tx", COLOR_TX_DEFAULT);
 
-	//OutToLunch
+	//Out to lunch
 	index = Index(ID_STATUS_OUTTOLUNCH);
 	StatusList[index].ID = ID_STATUS_OUTTOLUNCH;
 	StatusList[index].icon = SKINICON_STATUS_OUTTOLUNCH;
@@ -976,12 +977,12 @@ void InitStatusList()
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) is eating something"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("Out to lunch"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserOutToLunch", MAX_SKINSOUNDNAME);
-	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Out To Lunch"), MAX_SKINSOUNDDESC);
+	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: Out to lunch"), MAX_SKINSOUNDDESC);
 	lstrcpyn(StatusList[index].lpzSkinSoundFile, _T("lunch.wav"), MAX_PATH);
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40080bg", COLOR_BG_NAVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40080tx", COLOR_TX_DEFAULT);
 
-	//OnThePhone
+	//On the phone
 	index = Index(ID_STATUS_ONTHEPHONE);
 	StatusList[index].ID = ID_STATUS_ONTHEPHONE;
 	StatusList[index].icon = SKINICON_STATUS_ONTHEPHONE;
@@ -990,7 +991,7 @@ void InitStatusList()
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) had to answer the phone"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzStandardText, TranslateT("On the phone"), MAX_STANDARDTEXT);
 	lstrcpynA(StatusList[index].lpzSkinSoundName, "UserOnThePhone", MAX_SKINSOUNDNAME);
-	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: On The Phone"), MAX_SKINSOUNDDESC);
+	lstrcpyn(StatusList[index].lpzSkinSoundDesc, LPGENT("User: On the phone"), MAX_SKINSOUNDDESC);
 	lstrcpyn(StatusList[index].lpzSkinSoundFile, _T("phone.wav"), MAX_PATH);
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40079bg", COLOR_BG_NAVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40079tx", COLOR_TX_DEFAULT);
