@@ -43,7 +43,7 @@ void FreeXSC(XSTATUSCHANGE *xsc)
 
 void RemoveLoggedEvents(MCONTACT hContact)
 {
-	for (int i = eventList.getCount()-1; i >= 0; i--) {
+	for (int i = eventList.getCount() - 1; i >= 0; i--) {
 		DBEVENT *dbevent = eventList[i];
 		if (dbevent->hContact == hContact) {
 			db_event_delete(dbevent->hContact, dbevent->hDBEvent);
@@ -130,7 +130,7 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 	POPUPDATAT ppd = {0};
 	ppd.lchContact = xsc->hContact;
 
-	switch(xsc->type) {
+	switch (xsc->type) {
 	case TYPE_JABBER_MOOD:
 	case TYPE_JABBER_ACTIVITY:
 		mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", xsc->szProto, (xsc->type == TYPE_JABBER_MOOD) ? "mood" : "activity", "icon");
@@ -200,7 +200,7 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 		Template = templates.LogOpening; break;
 	}
 
-	TCHAR stzPopupText[2*MAX_TEXT_LEN];
+	TCHAR stzPopupText[2 * MAX_TEXT_LEN];
 	ReplaceVars(xsc, Template, templates.PopupDelimiter, stzPopupText);
 	_tcsncpy(ppd.lptzText, stzPopupText, SIZEOF(ppd.lptzText));
 	ppd.lptzText[SIZEOF(ppd.lptzText) - 1] = 0;
@@ -246,7 +246,7 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 		Template = templates.LogOpening; break;
 	}
 
-	TCHAR stzLogText[2*MAX_TEXT_LEN], stzLastLog[2*MAX_TEXT_LEN];
+	TCHAR stzLogText[2 * MAX_TEXT_LEN], stzLastLog[2 * MAX_TEXT_LEN];
 	ReplaceVars(xsc, Template, templates.LogDelimiter, stzLogText);
 	DBGetStringDefault(xsc->hContact, MODULE, DB_LASTLOG, stzLastLog, SIZEOF(stzLastLog), _T(""));
 
@@ -258,7 +258,7 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 		DBEVENTINFO dbei = {0};
 		dbei.cbSize = sizeof(dbei);
 		dbei.cbBlob = (DWORD)strlen(blob) + 1;
-		dbei.pBlob = (PBYTE) blob;
+		dbei.pBlob = (PBYTE)blob;
 		dbei.eventType = EVENTTYPE_STATUSCHANGE;
 		dbei.flags = DBEF_READ | DBEF_UTF;
 
@@ -305,13 +305,14 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 
 	mir_snprintf(buff, SIZEOF(buff), "%d", ID_STATUS_EXTRASTATUS);
 
-	if (( db_get_b(0, MODULE, buff, 1) == 0)
+	if ((db_get_b(0, MODULE, buff, 1) == 0)
 		|| (db_get_w(xsc->hContact, xsc->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
 		|| (!opt.HiddenContactsToo && db_get_b(xsc->hContact, "CList", "Hidden", 0))
 		|| (opt.TempDisabled)
-		|| (opt.IgnoreEmpty && (xsc->stzTitle == NULL || xsc->stzTitle[0] == '\0') && (xsc->stzText == NULL || xsc->stzText[0] == '\0'))) {
-			 FreeXSC(xsc);
-			 return;
+		|| (opt.IgnoreEmpty && (xsc->stzTitle == NULL || xsc->stzTitle[0] == '\0') && (xsc->stzText == NULL || xsc->stzText[0] == '\0')))
+	{
+		FreeXSC(xsc);
+		return;
 	}
 
 	char statusIDs[12], statusIDp[12];
@@ -398,7 +399,7 @@ TCHAR *GetJabberAdvStatusText(MCONTACT hContact, char *szProto, char *szSlot, ch
 	buff[0] = 0;
 
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", szProto, szSlot, szValue);
-	if ( !db_get_ts(hContact, "AdvStatus", szSetting, &dbv)) {
+	if (!db_get_ts(hContact, "AdvStatus", szSetting, &dbv)) {
 		_tcsncpy(buff, dbv.ptszVal, bufflen);
 		buff[bufflen - 1] = 0;
 		db_free(&dbv);
@@ -409,15 +410,7 @@ TCHAR *GetJabberAdvStatusText(MCONTACT hContact, char *szProto, char *szSlot, ch
 
 void LogXstatusChange(MCONTACT hContact, char *szProto, int xstatusType, TCHAR *stzTitle, TCHAR *stzText)
 {
-	XSTATUSCHANGE *xsc = 
-		NewXSC(
-			hContact, 
-			szProto, 
-			xstatusType, 
-			NOTIFY_OPENING_ML, 
-			stzTitle[0] ? mir_tstrdup(stzTitle): NULL,
-			stzText[0] ? mir_tstrdup(stzText) : NULL
-		);
+	XSTATUSCHANGE *xsc = NewXSC(hContact, szProto, xstatusType, NOTIFY_OPENING_ML, stzTitle[0] ? mir_tstrdup(stzTitle) : NULL, stzText[0] ? mir_tstrdup(stzText) : NULL);
 
 	LogToMessageWindow(xsc, TRUE);
 	FreeXSC(xsc);
@@ -463,13 +456,8 @@ int OnWindowEvent(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	if (opt.EnableLogging &&
-	   (mwed->uType == MSG_WINDOW_EVT_OPEN) && 
-	   (templates.LogFlags & NOTIFY_OPENING_ML) &&
-	   (db_get_b(mwed->hContact, MODULE, "EnableLogging", 1) == 1))
-	{
+	if (opt.EnableLogging && (mwed->uType == MSG_WINDOW_EVT_OPEN) && (templates.LogFlags & NOTIFY_OPENING_ML) && (db_get_b(mwed->hContact, MODULE, "EnableLogging", 1) == 1))
 		mir_forkthread(AddEventThread, (void*)mwed->hContact);
-	}
 
 	return 0;
 }

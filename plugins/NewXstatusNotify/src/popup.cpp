@@ -31,7 +31,7 @@ static int AwayMsgHook(WPARAM wParam, LPARAM lParam, LPARAM pObj)
 	if (ack->type != ACKTYPE_AWAYMSG || ack->hProcess != pdp->hAwayMsgProcess)
 		return 0;
 
-	//The first thing we go is removing the hook from the chain to avoid useless calls.
+	//The first thing we do is removing the hook from the chain to avoid useless calls.
 	UnhookEvent(pdp->hAwayMsgHook);
 	pdp->hAwayMsgHook = NULL;
 
@@ -39,7 +39,7 @@ static int AwayMsgHook(WPARAM wParam, LPARAM lParam, LPARAM pObj)
 		return 0;
 
 	MCONTACT hContact = PUGetContact(pdp->hWnd);
-	ptrT pstzLast( db_get_tsa(hContact, MODULE, "LastPopupText"));
+	ptrT pstzLast(db_get_tsa(hContact, MODULE, "LastPopupText"));
 
 	TCHAR *tszStatus = (TCHAR*)ack->lParam;
 	if (tszStatus == NULL || *tszStatus == 0)
@@ -60,9 +60,8 @@ void QueryAwayMessage(HWND hWnd, PLUGINDATA *pdp)
 {
 	MCONTACT hContact = PUGetContact(hWnd);
 	char *szProto = GetContactProto(hContact);
-	if (szProto)
-	{
-		if ((CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0) & PF1_MODEMSGRECV) &&
+	if (szProto) {
+		if ((CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_MODEMSGRECV) &&
 			(CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_3, 0) & Proto_Status2Flag(pdp->newStatus)))
 		{
 			pdp->hWnd = hWnd;
@@ -116,7 +115,7 @@ LRESULT CALLBACK PopupDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 {
 	PLUGINDATA *pdp = NULL;
 
-	switch(message) {
+	switch (message) {
 	case WM_MEASUREITEM: //Needed by the contact's context menu
 		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 
@@ -150,7 +149,7 @@ LRESULT CALLBACK PopupDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 	case UM_INITPOPUP:
 		pdp = (PLUGINDATA *)PUGetPluginData(hwnd);
 		if (pdp != NULL) {
-			char *szProto = GetContactProto( PUGetContact(hwnd));
+			char *szProto = GetContactProto(PUGetContact(hwnd));
 			if (szProto && opt.ReadAwayMsg && StatusHasAwayMessage(szProto, pdp->newStatus)) {
 				WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 				if (myStatus != ID_STATUS_INVISIBLE)

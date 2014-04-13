@@ -61,7 +61,7 @@ typedef struct tagOPTIONS {
 	BYTE LDisableForMusic;
 	BYTE LTruncateMsg;
 	DWORD LMsgLen;
-	//IDD_OPT_SMPOPUP
+	// IDD_OPT_SMPOPUP
 	BYTE PopupOnConnect;
 	BYTE IgnoreEmpty;
 	// OTHER
