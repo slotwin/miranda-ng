@@ -253,36 +253,36 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new) 
 
 		if (cws_new->value.type == DBVT_DELETED) {
 			if (dbv_old.type == DBVT_WCHAR)
-				ret = CheckStrW(dbv_old.pwszVal, 2, 0);
+				ret = CheckStrW(dbv_old.pwszVal, COMPARE_DEL, COMPARE_SAME);
 			else if (dbv_old.type == DBVT_UTF8 || dbv_old.type == DBVT_ASCIIZ)
-				ret = CheckStr(dbv_old.pszVal, 2, 0);
+				ret = CheckStr(dbv_old.pszVal, COMPARE_DEL, COMPARE_SAME);
 			else
-				ret = 2;
+				ret = COMPARE_DEL;
 		}
 		else if (dbv_old.type != cws_new->value.type)
-			ret = (lstrcmpW(smi->newstatusmsg, smi->oldstatusmsg) ? CheckStrW(smi->newstatusmsg, 1, 2) : 0);
+			ret = (lstrcmpW(smi->newstatusmsg, smi->oldstatusmsg) ? CheckStrW(smi->newstatusmsg, COMPARE_DIFF, COMPARE_DEL) : COMPARE_SAME);
 
 		else if (dbv_old.type == DBVT_ASCIIZ)
-			ret = (lstrcmpA(cws_new->value.pszVal, dbv_old.pszVal) ? CheckStr(cws_new->value.pszVal, 1, 2) : 0);
+			ret = (lstrcmpA(cws_new->value.pszVal, dbv_old.pszVal) ? CheckStr(cws_new->value.pszVal, COMPARE_DIFF, COMPARE_DEL) : COMPARE_SAME);
 
 		else if (dbv_old.type == DBVT_UTF8)
-			ret = (lstrcmpA(cws_new->value.pszVal, dbv_old.pszVal) ? CheckStr(cws_new->value.pszVal, 1, 2) : 0);
+			ret = (lstrcmpA(cws_new->value.pszVal, dbv_old.pszVal) ? CheckStr(cws_new->value.pszVal, COMPARE_DIFF, COMPARE_DEL) : COMPARE_SAME);
 
 		else if (dbv_old.type == DBVT_WCHAR)
-			ret = (lstrcmpW(cws_new->value.pwszVal, dbv_old.pwszVal) ? CheckStrW(cws_new->value.pwszVal, 1, 2) : 0);
+			ret = (lstrcmpW(cws_new->value.pwszVal, dbv_old.pwszVal) ? CheckStrW(cws_new->value.pwszVal, COMPARE_DIFF, COMPARE_DEL) : COMPARE_SAME);
 
 		db_free(&dbv_old);
 	}
 	else {
 		if (cws_new->value.type == DBVT_DELETED)
-			ret = 0;
+			ret = COMPARE_SAME;
 		else if (cws_new->value.type == DBVT_WCHAR)
-			ret = CheckStrW(cws_new->value.pwszVal, 1, 0);
+			ret = CheckStrW(cws_new->value.pwszVal, COMPARE_DIFF, COMPARE_SAME);
 		else if (cws_new->value.type == DBVT_UTF8 ||
 			cws_new->value.type == DBVT_ASCIIZ)
-			ret = CheckStr(cws_new->value.pszVal, 1, 0);
+			ret = CheckStr(cws_new->value.pszVal, COMPARE_DIFF, COMPARE_SAME);
 		else
-			ret = 1;
+			ret = COMPARE_DIFF;
 
 		smi->oldstatusmsg = NULL;
 	}
@@ -296,7 +296,7 @@ TCHAR* AddCR(const TCHAR *statusmsg)
 	int i = 0, len = lstrlen(statusmsg), j;
 	TCHAR *tmp = (TCHAR*)mir_alloc(1024 * sizeof(TCHAR));
 	*tmp = _T('\0');
-	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024){
+	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
 		j = (int)(found - statusmsg);
 		if (lstrlen(tmp) + j - i + 2 < 1024)
 			tmp = _tcsncat(tmp, statusmsg + i, j - i);
@@ -703,7 +703,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		smi.proto = szProto;
 		smi.hContact = hContact;
 		smi.compare = CompareStatusMsg(&smi, cws);
-		if ((smi.compare == 0) || (opt.IgnoreEmpty && (smi.compare == 2))) {
+		if ((smi.compare == COMPARE_SAME) || (opt.IgnoreEmpty && (smi.compare == COMPARE_DEL))) {
 			mir_free(smi.newstatusmsg);
 			mir_free(smi.oldstatusmsg);
 			return 1;
@@ -716,7 +716,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 		smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
 
-		if (opt.IgnoreEmpty && (smi.compare == 2))
+		if (opt.IgnoreEmpty && (smi.compare == COMPARE_DEL))
 			retempty = FALSE;
 		else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PopupOnConnect)
 			rettime = FALSE;
@@ -727,7 +727,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 			TCHAR *str;
 			DBVARIANT dbVar = {0};
 
-			if (smi.compare == 2) {
+			if (smi.compare == COMPARE_DEL) {
 				if (!db_get_ts(NULL, MODULE, "TPopupSMRemove", &dbVar))
 					str = GetStr(&smi, dbVar.ptszVal);
 				else

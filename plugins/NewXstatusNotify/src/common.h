@@ -97,6 +97,10 @@
 
 #define JS_PARSE_XMPP_URI		"/ParseXmppURI"
 
+#define COMPARE_SAME			0
+#define COMPARE_DIFF			1
+#define COMPARE_DEL				2
+
 typedef struct tagSTATUS
 {
 	int ID;
