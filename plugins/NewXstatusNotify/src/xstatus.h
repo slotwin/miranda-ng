@@ -43,14 +43,14 @@
 #define XSTATUS_SOUND_REMOVED		"XStatusRemove"
 
 // tabSRMM stuff (logging to message window)
-#define EVENTTYPE_STATUSCHANGE			25368
+#define EVENTTYPE_STATUSCHANGE		25368
 
 // Default templates
 #define DEFAULT_POPUP_DELIMITER		_T("%B")
 #define DEFAULT_POPUP_NEW			TranslateT("changed %N to: %T%D%I") 
 #define DEFAULT_POPUP_CHANGEMSG		TranslateT("changed %N message to:%D%I") 
 #define DEFAULT_POPUP_REMOVE		TranslateT("removed %N") 
-#define DEFAULT_POPUP_STATUSMESSAGE	LPGEN("changed his/her status message to %n")
+#define DEFAULT_POPUP_STATUSMESSAGE	LPGEN("changed status message to %n")
 
 #define DEFAULT_LOG_DELIMITER		_T(": ")
 #define DEFAULT_LOG_NEW				TranslateT("changed %N @ %T%D%I") 
@@ -73,7 +73,7 @@
 \\n\tline break\r\n\
 \\t\ttab stop")
 
-typedef struct tagXSTATUSCHANGE 
+typedef struct tagXSTATUSCHANGE
 {
 	MCONTACT hContact;
 	char *szProto;
@@ -83,7 +83,7 @@ typedef struct tagXSTATUSCHANGE
 	TCHAR *stzText;
 } XSTATUSCHANGE;
 
-typedef struct tagDBEVENT  
+typedef struct tagDBEVENT
 {
 	MCONTACT hContact;
 	HANDLE hDBEvent;
