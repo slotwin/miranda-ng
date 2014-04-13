@@ -19,7 +19,7 @@ Tekst
 [Close after:]
 Zamknij po:
 [sec (0 default, -1 disabled)]
-s (0 - domyślny, -1 wyłączony)
+s (0 - domyślnie, -1 nie chowaj)
 [Settings]
 Ustawienia
 [try resolve addresses]
@@ -47,9 +47,7 @@ Nazwa programu
 [Local IP:Port]
 Lokalne IP:Port
 [Action:]
-Czynność:
-[OK]
-OK
+Akcja:
 [Cancel]
 Anuluj
 [* and ? wildcard characters also available (for port enter number or *)]
@@ -78,7 +76,7 @@ Akcja
 [Plugins]
 Wtyczki
 [New Connection Notification]
-Powiadomienie o Nowym Połączeniu
+Powiadomienie o nowym połączeniu
 ;file \plugins\ConnectionNotify\src\filter.cpp
 [First close options window]
 Najpierw zamknij okno opcji

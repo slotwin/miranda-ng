@@ -109,7 +109,7 @@ Pokaż poprzedni status
 [Timeout]
 Wyświetlaj
 [Popups when status changes to:]
-Popupy, gdy status zmienia się na:
+Pokaż, gdy status zmienia się na:
 [Click action]
 Akcje przycisku
 [Show contact group name]
@@ -117,9 +117,9 @@ Pokaż nazwę grupy kontaktu
 [Use alternative descriptions]
 Użyj alternatywnych określeń
 [0 = Default]
-0 - Domyślny
+0 - domyślnie
 [-1 = Infinite]
--1 - Nie chowaj
+-1 - nie chowaj
 [Sec]
 s
 [On left click]
@@ -135,7 +135,7 @@ Limit czasu połączenia
 [Notification]
 Powiadomienie
 [Disable for extra status 'Music']
-Wyłącz dla statusu 'Muzyka'
+Wyłącz dla xStatusu "Muzyka"
 [Truncate message length to:]
 Przytnij wiadomość do:
 [characters]
@@ -156,8 +156,6 @@ Zmienne
 Domyślne
 [Disable notifications]
 Wyłącz powiadomienia
-[OK]
-OK
 [Cancel]
 Anuluj
 [Disable globally]

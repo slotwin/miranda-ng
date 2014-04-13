@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (C) 2012 Mataes
 
 This is free software; you can redistribute it and/or
@@ -254,6 +254,7 @@ void UpdateMenu(BOOL State)
 INT_PTR EnableDisable(WPARAM wParam, LPARAM lParam)
 {
 	UpdateMenu(db_get_b(NULL, MODULE, "AutoUpdate", 1));
+	NewsAggrSetStatus(db_get_b(NULL, MODULE, "AutoUpdate", 1) ? ID_STATUS_ONLINE : ID_STATUS_OFFLINE, 0);
 	return 0;
 }
 

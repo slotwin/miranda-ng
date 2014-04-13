@@ -6,7 +6,7 @@
 ;  Authors: Cristian Libotean
 ;============================================================
 [Notifies you of upcoming birthdays.]
-Powiadamia Cię o nadchodzących urodzinach.
+Powiadomienia o nadchodzących urodzinach.
 ;file \plugins\WhenWasIt\res\WhenWasIt.rc
 [Notify of birthdays:]
 Powiadamiaj o urodzinach:
@@ -31,7 +31,7 @@ Dźwięki
 [Play sounds when there are]
 Odgrywaj dźwięk, gdy jest
 [days or less to birthday.]
-dni lub mniej do urodzin
+dni lub mniej do urodzin.
 [Start notifying]
 Zacznij powiadamiać
 [days in advance and]
@@ -70,8 +70,6 @@ Zamknij
 Pokaż wszystkie kontakty
 [Set birthday:]
 Ustaw urodziny:
-[OK]
-OK
 [Manage anniversaries]
 Zarządzaj rocznicami
 [Title:]
@@ -100,7 +98,7 @@ Moduł mBirthday
 [Nothing]
 -Nic-
 [Dismiss]
-Zamknij
+Odrzuć
 [Message window]
 Okno rozmowy
 [All contacts]
@@ -166,7 +164,7 @@ Eksportuj urodziny
 Dodaj/Zmień datę &urodzin
 ;file \plugins\WhenWasIt\src\icons.cpp
 [Check birthdays menu item]
-Element 'Sprawdź urodziny' w menu
+Element "Sprawdź urodziny" w menu
 [List birthdays menu item]
 Element menu pokaż listę urodzin
 [Add/change birthday]
@@ -181,7 +179,7 @@ Więcej niż %d dni do urodzin
 Przypominacz o urodzinach WhenWasIt
 ;file \plugins\WhenWasIt\src\notifiers.cpp
 [No upcoming birthdays.]
-Brak zbliżających się urodzin
+Brak zbliżających się urodzin.
 [%s has birthday in %d days.]
 %s ma urodziny w przeciągu %d dni.
 [%s has birthday tomorrow.]
@@ -245,4 +243,4 @@ Ostrzeżenie! Proszę nie mieszać wyeksportowanych plików urodzin o kodowaniu 
 Ten plik został wyeksportowany przy użyciu wersji Unicode WhenWasIt. Proszę używać tylko wersji Unicode do importu urodzin.
 ;file \plugins\WhenWasIt\src\services.h
 [Could not find UID '%s [%S]' in current database, skipping]
-Nie można odnaleźć UID '%s [%S]' w aktualnej bazie danych, pomijanie
+Nie można odnaleźć UID "%s [%S]" w aktualnej bazie danych, pomijanie

@@ -1,75 +1,144 @@
 #include "common.h"
 
-int SteamToMirandaStatus(int state)
+void CSteamProto::PollServer(const char *token, const char *sessionId, UINT32 messageId, SteamWebApi::PollApi::PollResult *pollResult)
 {
-	switch (state)
+	debugLogA("CSteamProto::PollServer: call SteamWebApi::PollApi::Poll");
+	SteamWebApi::PollApi::Poll(m_hNetlibUser, token, sessionId, messageId, pollResult);
+
+	if (!pollResult->IsSuccess())
+		return;
+
+	CMStringA updatedIds;
+	for (size_t i = 0; i < pollResult->GetItemCount(); i++)
 	{
-	case 0: //Offline
-		return ID_STATUS_OFFLINE;
-	case 2: //Busy
-		return ID_STATUS_DND;
-	case 3: //Away
-		return ID_STATUS_AWAY;
-		/*case 4: //Snoozing
-			prim = PURPLE_STATUS_EXTENDED_AWAY;
-			break;
-			case 5: //Looking to trade
-			return "trade";
-			case 6: //Looking to play
-			return "play";*/
-		//case 1: //Online
-	default:
-		return ID_STATUS_ONLINE;
-	}
-}
-
-
-int CSteamProto::PollStatus()
-{
-	ptrA steamId(getStringA("SteamID"));
-	ptrA sessionId(getStringA("SessionID"));
-	ptrA messageId(getStringA("MessageID"));
-
-	SteamWebApi::PollApi::Poll poll;
-	SteamWebApi::PollApi::PollStatus(m_hNetlibUser, sessionId, steamId, messageId, &poll);
-
-	if (!poll.IsSuccess())
-		return -1;
-
-	//setString
-
-	for (int i = 0; i < poll.GetItemCount(); i++)
-	{
-		switch (poll[i]->GetType())
+		const SteamWebApi::PollApi::PoolItem *item = pollResult->GetAt(i);
+		switch (item->GetType())
 		{
-		case SteamWebApi::PollApi::POOL_TYPE::TYPING:
+		case SteamWebApi::PollApi::POOL_TYPE_TYPING:
 			break;
 
-		case SteamWebApi::PollApi::POOL_TYPE::MESSAGE:
+		case SteamWebApi::PollApi::POOL_TYPE_MESSAGE:
 			{
-				const wchar_t *text = ((SteamWebApi::PollApi::Message*)poll[i])->GetText();
+				SteamWebApi::PollApi::Message *message = (SteamWebApi::PollApi::Message*)item;
+
+				MCONTACT hContact = FindContact(message->GetSteamId());
+				if (hContact)
+				{
+					const wchar_t *text = message->GetText();
+
+					PROTORECVEVENT recv = { 0 };
+					recv.flags = PREF_UTF;
+					recv.timestamp = message->GetTimestamp();
+					recv.szMessage = mir_utf8encodeW(text);
+
+					ProtoChainRecvMsg(hContact, &recv);
+				}
 			}
 			break;
 
-		case SteamWebApi::PollApi::POOL_TYPE::STATE:
+		case SteamWebApi::PollApi::POOL_TYPE_MYMESSAGE:
 			{
-				int status = ((SteamWebApi::PollApi::State*)poll[i])->GetStatus();
-				const wchar_t *nickname = ((SteamWebApi::PollApi::State*)poll[i])->GetNickname();
+				SteamWebApi::PollApi::Message *message = (SteamWebApi::PollApi::Message*)item;
+
+				MCONTACT hContact = FindContact(message->GetSteamId());
+				if (hContact)
+				{
+					const wchar_t *text = message->GetText();
+
+					DBEVENTINFO dbei = { sizeof(dbei) };
+					dbei.szModule = this->m_szModuleName;
+					dbei.timestamp = message->GetTimestamp();
+					dbei.eventType = EVENTTYPE_MESSAGE;
+					dbei.cbBlob = lstrlen(text);
+					dbei.pBlob = (BYTE*)mir_utf8encodeW(text);
+					dbei.flags = DBEF_UTF | DBEF_SENT;
+
+					db_event_add(hContact, &dbei);
+				}
+			}
+			break;
+
+		case SteamWebApi::PollApi::POOL_TYPE_STATE:
+			{
+				SteamWebApi::PollApi::State *state = (SteamWebApi::PollApi::State*)item;
+
+				WORD status = CSteamProto::SteamToMirandaStatus(state->GetStatus());
+				const char *steamId = state->GetSteamId();
+				const wchar_t *nickname = state->GetNickname();
+
+				if (IsMe(steamId))
+				{
+					debugLogA("Change own status to %i", status);
+					WORD oldStatus = m_iStatus;
+					m_iStatus = m_iDesiredStatus = status;
+					ProtoBroadcastAck(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldStatus, m_iStatus);
+				}
+				else
+				{
+					MCONTACT hContact = FindContact(steamId);
+					if (hContact)
+						SetContactStatus(hContact, status);
+
+				}
+				
+				if (updatedIds.IsEmpty())
+					updatedIds.Append(steamId);
+				else
+					updatedIds.AppendFormat(",%s", steamId);
 			}
 			break;
 		}
 	}
 
-	return 0;
+	if (!updatedIds.IsEmpty())
+		//ForkThread(&CSteamProto::UpdateContactsThread, mir_strdup(updatedIds));
+		UpdateContactsThread(mir_strdup(updatedIds));
 }
 
 void CSteamProto::PollingThread(void*)
 {
 	debugLogA("CSteamProto::PollingThread: entering");
 
+	ptrA token(getStringA("TokenSecret"));
+	ptrA sessionId(getStringA("SessionID"));
+	UINT32 messageId = getDword("MessageID", 0);
+
+	SteamWebApi::PollApi::PollResult pollResult;
 	while (!m_bTerminated)
-		if (PollStatus() == -1)
+	{
+		PollServer(token, sessionId, messageId, &pollResult);
+		
+		if (pollResult.IsNeedRelogin())
+			debugLogA("CSteamProto::PollingThread: need to relogin");
+		/*{
+			SteamWebApi::LoginApi::LoginResult loginResult;
+			SteamWebApi::LoginApi::Logon(m_hNetlibUser, token, &loginResult);
+
+			if (!loginResult.IsSuccess())
+				break;
+
+			sessionId = mir_strdup(loginResult.GetSessionId());
+			setString("SessionID", sessionId);
+		}*/
+
+		if (!pollResult.IsSuccess())
+		{
+			debugLogA("CSteamProto::PollServer: call SteamWebApi::PollApi::Poll");
+			SetStatus(ID_STATUS_OFFLINE);
+
+			// token has expired
+			if (pollResult.GetStatus() == HTTP_STATUS_UNAUTHORIZED)
+			{
+				delSetting("TokenSecret");
+				delSetting("Cookie");
+			}
+
 			break;
+		}
+
+		messageId = pollResult.GetMessageId();
+		setDword("MessageID", messageId);
+	}
 
 	m_hPollingThread = NULL;
 	debugLogA("CSteamProto::PollingThread: leaving");

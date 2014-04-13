@@ -18,8 +18,6 @@ Pochodzenie
 &Aktualizuj
 [Updating]
 Aktualizowanie
-[OK]
-OK
 [Cancel]
 Anuluj
 [Apply]
@@ -157,7 +155,7 @@ Nadpisz okienka wiadomości popupów
 [Preview]
 Podgląd
 [Homepage:]
-WWW:
+Strona domowa:
 [Add Affiliation]
 Przynależność
 [Add Past]
@@ -177,7 +175,7 @@ Lista rocznic
 [Upcoming anniversaries\nThis list gives you some overview about all your contact's anniversaries.]
 Nadchodzące rocznice\nTa lista pokazuje informacje o wszystkich rocznicach kontaktów.
 [Statistics:]
-Statystyki
+Statystyki:
 [with birthday:]
 z urodzinami:
 [female:]
@@ -281,7 +279,7 @@ Dodatkowe ikony
 [Replace the following default icons:]
 Zamień następujące domyślne ikony:
 [Homepage]
-Strona WWW
+Strona domowa
 [Phone]
 Telefon
 [E-Mail]
@@ -291,7 +289,7 @@ Płeć
 [Misc]
 Inne
 [Show 'Restart' menu item]
-Pokaż 'Restart' w menu
+Pokaż "Restart" w menu
 [Use Zodiac as default avatar]
 Użyj znak zodiaku jako domyślny awatar
 [Country Flags]
@@ -456,7 +454,7 @@ Błąd
 [Upload Details]
 Wyślij dane
 [Protocol '%s' is offline]
-Protokół '%s' jest rozłączony
+Protokół "%s" jest rozłączony
 [You are not currently connected to the ICQ network.\nYou must be online in order to update your information on the server.\n\nYour changes will be saved to database only.]
 Obecnie nie jesteś podłączony do sieci ICQ.\n Musisz być połączony aby uaktualnić informacje na serwer.\n\nTwoje zmian zostaną zapisane tylko do profilu.
 [Uploading]
@@ -501,7 +499,7 @@ Błąd wysyłania
 Twoje dane nie zostały załadowane pomyślnie.\nZostały one zapisane tylko w bazie danych.
 ;file \plugins\UserInfoEx\src\init.cpp
 [Fatal error, image services not found. Flags Module will be disabled.]
-Błąd, nie znaleziono wtyczki 'advaimg.dll'. Usługa Flag zostanie wyłączona.
+Błąd, nie znaleziono wtyczki "advaimg.dll". Usługa Flag zostanie wyłączona.
 ;file \plugins\UserInfoEx\src\mir_icolib.cpp
 [IM Naming]
 Nazewnictwo IM
@@ -556,29 +554,29 @@ Szukaj
 [Ex-/Import]
 Eksport/Import
 [Backup Birthday]
-Przywróć rocznice
+Kopia zapasowa urodzin
 [Birthday today]
-Dzisiejsze rocznice
+Dzisiejsze urodziny
 [Birthday tomorrow]
-Jutrzejsze rocznice
+Jutrzejsze urodziny
 [Birthday in 2 days]
-Rocznice w ciągu 2 dni
+Urodziny w ciągu 2 dni
 [Birthday in 3 days]
-Rocznice w ciągu 3 dni
+Urodziny w ciągu 3 dni
 [Birthday in 4 days]
-Rocznice w ciągu 4 dni
+Urodziny w ciągu 4 dni
 [Birthday in 5 days]
-Rocznice w ciągu 5 dni
+Urodziny w ciągu 5 dni
 [Birthday in 6 days]
-Rocznice w ciągu 6 dni
+Urodziny w ciągu 6 dni
 [Birthday in 7 days]
-Rocznice w ciągu 7 dni
+Urodziny w ciągu 7 dni
 [Birthday in 8 days]
-Rocznice w ciągu 8 dni
+Urodziny w ciągu 8 dni
 [Birthday in 9 days]
-Rocznice w ciągu 9 dni
+Urodziny w ciągu 9 dni
 [Birthday later]
-Późniejsze rocznice
+Późniejsze urodziny
 [Anniversary today]
 Dzisiejsze rocznice
 [Anniversary tomorrow]
@@ -628,7 +626,7 @@ Eksportuj wszystkie kontakty
 [Import all contacts]
 Importuj wszystkie kontakty
 [Backup birthdays]
-Przywróć rocznice
+Kopia zapasowa urodzin
 [Check anniversaries]
 Sprawdź rocznice
 [Extended UserInfo]

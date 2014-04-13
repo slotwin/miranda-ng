@@ -6,7 +6,7 @@
 ;  Authors: Mataes, FREAK_THEMIGHTY
 ;============================================================
 [RSS/Atom news aggregator.]
-Czytnik kanałów RSS/Atom
+Czytnik kanałów RSS/Atom.
 ;file \plugins\NewsAggregator\Res\Resource.rc
 [Add]
 Dodaj
@@ -20,8 +20,6 @@ Importuj
 Eksportuj
 [Retrieve news at startup]
 Pobieraj wiadomości podczas startu
-[OK]
-OK
 [Cancel]
 Anuluj
 [General Settings]
@@ -87,7 +85,7 @@ Wprowadź swoje hasło
 [News Aggregator]
 RSS/Atom
 [%s\nis not a valid feed's address.]
-nie jest poprawnym adresem RSS.
+%s\nnie jest poprawnym adresem RSS.
 [empty]
 pusty
 ;file \plugins\NewsAggregator\Src\ExportImport.cpp

@@ -40,8 +40,6 @@ Klucz użytkownika
 Pobierz klucz
 [Configure formatting]
 Konfiguruj formatowanie
-[OK]
-OK
 [Cancel]
 Anuluj
 [Up]
@@ -136,13 +134,13 @@ Rozmiar pliku wynosi %d KB, na pewno chcesz wkleić tak duży plik?
 [Are You sure?]
 Czy na pewno?
 [Cannot read file '%s']
-Nie można wczytać pliku '%s'
+Nie można wczytać pliku "%s"
 [File size is larger then 10 MB, cannot be sent]
 Rozmiar pliku jest większy niż 10 MB, nie może zostać wysłany
 [Cannot open file '%s']
-Nie można otworzyć pliku '%s'
+Nie można otworzyć pliku "%s"
 [File '%s' is empty]
-Plik '%s' jest pusty
+Plik "%s" jest pusty
 ;file \plugins\PasteIt\src\PasteToWeb1.cpp
 [Error during sending text to web page: %s]
 Błąd podczas wysyłania tekstu do strony www: %s

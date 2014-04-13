@@ -1,6 +1,15 @@
 #ifndef _STEAM_PROTO_H_
 #define _STEAM_PROTO_H_
 
+#define STEAM_SEARCH_BYID 1001
+#define STEAM_SEARCH_BYNAME 1002
+
+struct GuardParam
+{
+	char code[10];
+	char domain[32];
+};
+
 struct CaptchaParam
 {
 	BYTE *data;
@@ -8,20 +17,19 @@ struct CaptchaParam
 	char text[10];
 };
 
-struct GuardParam
+struct SendMessageParam
 {
-	wchar_t emailDomain[32];
-	char code[10];
+	MCONTACT hContact;
+	HANDLE hMessage;
+	const char *text;
 };
 
-template<typename T, void (CSteamProto::*Callback)(T*)>
-void CallbackConverter(void *owner, void *arg)
+struct STEAM_SEARCH_RESULT
 {
-	T *typedArg = (T*)arg;
-	CSteamProto *proto = (CSteamProto*)owner;
-	if (owner != NULL)
-		(proto->*Callback)(typedArg);
-}
+	PROTOSEARCHRESULT hdr;
+	const SteamWebApi::FriendApi::Summary *contact;
+};
+
 
 class CSteamProto : public PROTO<CSteamProto>
 {
@@ -84,6 +92,7 @@ public:
 protected:
 	bool m_bTerminated;
 	HANDLE m_hPollingThread;
+	ULONG  hMessageProcess;
 	CRITICAL_SECTION contact_search_lock;
 
 	// instances
@@ -91,24 +100,58 @@ protected:
 	static int CompareProtos(const CSteamProto *p1, const CSteamProto *p2);
 
 	// pooling thread
-	int PollStatus();
+	void PollServer(const char *sessionId, const char *steamId, UINT32 messageId, SteamWebApi::PollApi::PollResult *pollResult);
 	void __cdecl PollingThread(void*);
 
 	// account
+	bool IsOnline();
+	bool IsMe(const char *steamId);
+	void SetServerStatus(WORD status);
+	void Authorize(SteamWebApi::AuthorizationApi::AuthResult *authResult);
 	void __cdecl LogInThread(void*);
+	void __cdecl LogOutThread(void*);
+	void __cdecl SetServerStatusThread(void*);
 
 	// contacts
+	void SetContactStatus(MCONTACT hContact, WORD status);
+	void SetAllContactsStatus(WORD status);
+
+	void UpdateContact(MCONTACT hContact, const SteamWebApi::FriendApi::Summary *contact);
+	void __cdecl UpdateContactsThread(void*);
+
 	MCONTACT FindContact(const char *steamId);
-	MCONTACT AddContact(const SteamWebApi::FriendApi::Friend &contact);
-	//void OnContactListLoadedAsync(Steam::FriendList::Result *result);
+	MCONTACT AddContact(const SteamWebApi::FriendApi::Summary *contact);
+
+	void __cdecl LoadContactListThread(void*);
+	
+	void __cdecl SearchByIdThread(void*);
+	void __cdecl SearchByNameThread(void*);
+
+	// messages
+	void __cdecl SendMessageThread(void*);
+	void __cdecl SendTypingThread(void*);
+
+	// avatars
+	wchar_t * GetAvatarFilePath(MCONTACT hContact);
+
+	INT_PTR __cdecl GetAvatarInfo(WPARAM, LPARAM);
+	INT_PTR __cdecl GetAvatarCaps(WPARAM, LPARAM);
+	INT_PTR __cdecl GetMyAvatar(WPARAM, LPARAM);
+	INT_PTR __cdecl SetMyAvatar(WPARAM, LPARAM);
 
 	//events
 	int OnModulesLoaded(WPARAM, LPARAM);
 	int OnPreShutdown(WPARAM, LPARAM);
 	INT_PTR __cdecl OnAccountManagerInit(WPARAM wParam, LPARAM lParam);
-	int __cdecl OnOptionsInit(WPARAM wParam, LPARAM lParam);
+	static int __cdecl OnOptionsInit(void *obj, WPARAM wParam, LPARAM lParam);
 
-	//options
+	// utils
+	static WORD SteamToMirandaStatus(int state);
+	static int MirandaToSteamState(int status);
+
+	static int RsaEncrypt(const SteamWebApi::RsaKeyApi::RsaKey &rsaKey, const char *data, DWORD dataSize, BYTE *encrypted, DWORD &encryptedSize);
+
+	// options
 	static INT_PTR CALLBACK GuardProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK CaptchaProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK MainOptionsProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);

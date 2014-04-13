@@ -10,8 +10,6 @@ Moduł obsługi zwykłych oraz grupowych rozmów dla Mirandy NG.
 ;file \plugins\TabSRMM\res\chat.rc
 [You can add the user by user name or his ID. Wildcards are allowed and recommended.]
 Możesz dodać osobę wybierając imię lub ID. Znaki dozwolone i rekomendowane.
-[OK]
-OK
 [Cancel]
 Anuluj
 [Show these events]
@@ -215,13 +213,13 @@ znaków
 [Only show event notifications when my status is...]
 Pokaż powiadomienie o zdarzeniach tylko, gdy następujący status to...
 [Popup Options]
-Opcje Popup
+Opcje popupów
 [Text]
 Tekst
 [Background]
 Tło
 [Timeout (seconds, 0 = default, -1 = no timeout)]
-Wyświetlaj (0 - Domyślny, -1 - Nie chowaj)
+Wyświetlaj (sekund, 0 - domyślnie, -1 - nie chowaj)
 [Default colors]
 Domyślne kolory
 [Others]
@@ -281,7 +279,7 @@ Maksymalizuj w pionie
 [Close or hide inactive container after]
 Zamknij lub ukryj nieaktywne kontenery po
 [sec. (0=never)]
-sec. (0 - nigdy)
+s (0 - nigdy)
 [Automatically size input area (*)]
 Automatyczny rozmiar obszaru wpisywania (*)
 [Use default setting]
@@ -1039,7 +1037,7 @@ Błąd tabSRMM
 Przychodzący plik
 [No description given]
 Brak opisu
-[Incoming file (invalid format]
+[Incoming file (invalid format)]
 Przychodzący plik (nieprawidłowy format)
 [Unknown event]
 Nieznane zdarzenie
@@ -1644,7 +1642,7 @@ Połącz nowe zdarzenia od tego samego w istniejącym popupie
 [Show headers]
 Pokaż nagłówki
 [Dismiss popup]
-Anuluj popup
+Odrzuć popup
 [Open event]
 Otwórz zdarzenie
 [Dismiss event]
@@ -1828,7 +1826,7 @@ Jesteś teraz znany jako %s
 [Notice from %s: ]
 Powiadomienie od %s:
 [The topic is '%s%s']
-Temat to '%s%s'
+Temat to "%s%s"
 [ (set by %s on %s)]
  (wybrany przez %s na %s)
 [ (set by %s)]
@@ -2148,7 +2146,7 @@ Pokaż symbole tekstowe
 [%s%s says:%s %s]
 %s%s mówi: %s %s
 [Look up '%s':]
-Zobacz '%s':
+Zobacz "%s":
 [No word to look up]
 Nie podano słowa do wyszukania
 [&Message %s]

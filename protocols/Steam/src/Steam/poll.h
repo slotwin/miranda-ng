@@ -1,5 +1,5 @@
-﻿#ifndef _STEAM_POOL_H_
-#define _STEAM_POOL_H_
+﻿#ifndef _STEAM_POLL_H_
+#define _STEAM_POLL_H_
 
 namespace SteamWebApi
 {
@@ -8,13 +8,15 @@ namespace SteamWebApi
 	public:
 		enum POOL_TYPE
 		{
-			MESSAGE = 0,
-			TYPING = 2,
-			STATE = 3,
-			//POOL_TYPE_RELATIONSHIP = 4
+			POOL_TYPE_UNKNOWN,
+			POOL_TYPE_MESSAGE,
+			POOL_TYPE_MYMESSAGE,
+			POOL_TYPE_TYPING,
+			POOL_TYPE_STATE,
+			//POOL_TYPE_RELATIONSHIP
 		};
 
-		class PoolItem : public Result
+		class PoolItem// : public Result
 		{
 			friend PollApi;
 
@@ -22,18 +24,18 @@ namespace SteamWebApi
 			std::string steamId;
 			DWORD timestamp;
 			POOL_TYPE type;
-			bool send;
 
 		public:
+			PoolItem() : timestamp(0), type(POOL_TYPE_UNKNOWN) { }
+
 			const char *GetSteamId() const { return steamId.c_str(); }
 			const DWORD GetTimestamp() const { return timestamp; }
 			POOL_TYPE GetType() const { return type; }
-			bool IsSend() const { return send; }
 		};
 
-		class Typing : PoolItem { friend PollApi; };
+		class Typing : public PoolItem { friend PollApi; };
 
-		class Message : PoolItem
+		class Message : public PoolItem
 		{
 			friend PollApi;
 
@@ -44,7 +46,7 @@ namespace SteamWebApi
 			const wchar_t *GetText() const { return text.c_str(); }
 		};
 
-		class State : PoolItem
+		class State : public PoolItem
 		{
 			friend PollApi;
 
@@ -57,45 +59,66 @@ namespace SteamWebApi
 			const wchar_t *GetNickname() const { return nickname.c_str(); }
 		};
 
-		class Poll : public Result
+		class PollResult : public Result
 		{
 			friend PollApi;
 
 		private:
+			bool need_relogin;
 			UINT32 messageId;
 			std::vector<PoolItem*> items;
 
 		public:
+			PollResult() : messageId(0), need_relogin(false) { }
+
 			UINT32 GetMessageId() const { return messageId; }
-			int GetItemCount() const { return items.size(); }
-			const PoolItem * operator[](int idx) const { return items.at(idx); }
+			bool IsNeedRelogin() const { return need_relogin; }
+			size_t GetItemCount() const { return items.size(); }
+			const PoolItem *GetAt(int idx) const { return items.at(idx); }
 		};
 
-		static void PollStatus(HANDLE hConnection, const char *sessionId, const char *steamId, UINT32 messageId, Poll *poll)
+		static void Poll(HANDLE hConnection, const char *token, const char *sessionId, UINT32 messageId, PollResult *pollResult)
 		{
-			poll->success = false;
+			pollResult->success = false;
+			pollResult->need_relogin = false;
+			pollResult->items.clear();
 
-			CMStringA data;
-			data.AppendFormat("steamid=%s", steamId);
-			data.AppendFormat("&umqid=%s", sessionId);
-			data.AppendFormat("&message=%ui", messageId);
+			char data[256];
+			mir_snprintf(data, SIZEOF(data), "access_token=%s&umqid=%s&message=%u", token, sessionId, messageId);
 
-			HttpRequest request(hConnection, REQUEST_POST, STEAM_API_URL "/ISteamWebUserPresenceOAuth/PollStatus/v0001");
+			SecureHttpPostRequest request(hConnection, STEAM_API_URL "/ISteamWebUserPresenceOAuth/Poll/v0001");
 			request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-			request.SetData(data.GetBuffer(), data.GetLength());
-			
+			request.SetData(data, strlen(data));
+			request.SetTimeout(90000); // may need to encrease timeout
+
 			mir_ptr<NETLIBHTTPREQUEST> response(request.Send());
-			if (!response || response->resultCode != HTTP_STATUS_OK)
+			if (!response)
+				return;
+
+			if ((pollResult->status = (HTTP_STATUS)response->resultCode) != HTTP_STATUS_OK)
 				return;
 
 			JSONNODE *root = json_parse(response->pData), *node, *child;
 			node = json_get(root, "error");
 			ptrW error(json_as_string(node));
-			if (lstrcmpi(error, L"OK"))
+
+			if (!lstrcmpi(error, L"Not Logged On"))
+			{
+				pollResult->need_relogin = true;
+				//pollResult->success = true;
+				return;
+			}
+			else if (!lstrcmpi(error, L"Timeout"))
+			{
+				pollResult->messageId = messageId;
+				pollResult->success = true;
+				return;
+			}
+			else if (lstrcmpi(error, L"OK"))
 				return;
 
 			node = json_get(root, "messagelast");
-			poll->messageId = json_as_int(node);
+			pollResult->messageId = json_as_int(node);
 
 			node = json_get(root, "messages");
 			root = json_as_array(node);
@@ -107,51 +130,49 @@ namespace SteamWebApi
 					if (child == NULL)
 						break;
 
-					node = json_get(child, "steamid_from");
-					ptrA cSteamId(mir_u2a(json_as_string(node)));
-
-					node = json_get(child, "utc_timestamp");
-					DWORD timestamp = atol(ptrA(mir_u2a(json_as_string(node))));
-
 					PoolItem *item = NULL;
 
 					node = json_get(child, "type");
 					ptrW type(json_as_string(node));
-					if (!lstrcmpi(type, L"saytext") || !lstrcmpi(type, L"emote"))
+					if (!lstrcmpi(type, L"saytext") || !lstrcmpi(type, L"emote") ||
+						!lstrcmpi(type, L"my_saytext") || !lstrcmpi(type, L"my_emote"))
 					{
 						Message *message = new Message();
-						message->type = POOL_TYPE::MESSAGE;
+
+						if (_tcsstr(type, L"my_") == NULL)
+							message->type = POOL_TYPE_MESSAGE;
+						else
+							message->type = POOL_TYPE_MYMESSAGE;
 
 						node = json_get(child, "text");
 						if (node != NULL) message->text = json_as_string(node);
 
+						node = json_get(child, "utc_timestamp");
+						message->timestamp = atol(ptrA(mir_u2a(json_as_string(node))));
+
 						item = message;
 					}
-					/*if (!lstrcmpi(type, L"my_saytext") || !lstrcmpi(type, L"my_emote"))
-					{
-						poll->type = POOL_TYPE::MESSAGE;
-					}*/
 					else if(!lstrcmpi(type, L"typing"))
 					{
 						item = new Typing();
-						item->type = POOL_TYPE::TYPING;
+						item->type = POOL_TYPE_TYPING;
 					}
 					else if (!lstrcmpi(type, L"personastate"))
 					{
 						State *state = new State();
-						state->type = POOL_TYPE::STATE;
+						state->type = POOL_TYPE_STATE;
 
 						node = json_get(child, "persona_state");
 						if (node != NULL) state->status = json_as_int(node);
 
-						node = json_get(child, "personaname");
+						node = json_get(child, "persona_name");
 						if (node != NULL) state->nickname = json_as_string(node);
 
 						item = state;
 					}
 					/*else if (!lstrcmpi(type, L"personarelationship"))
 					{
-						type = (int)POOL_TYPE::RELATIONSHIP;
+						type = POOL_TYPE_RELATIONSHIP;
 					}*/
 					/*else if (!lstrcmpi(type, L"leftconversation"))
 					{
@@ -161,15 +182,21 @@ namespace SteamWebApi
 						int z = 0;
 					}
 
+					node = json_get(child, "steamid_from");
+					item->steamId = ptrA(mir_u2a(json_as_string(node)));
+
+					node = json_get(child, "utc_timestamp");
+					item->timestamp = atol(ptrA(mir_u2a(json_as_string(node))));
+
 					if (item != NULL)
-						poll->items.push_back(item);
+						pollResult->items.push_back(item);
 				}
 			}
 
-			poll->success = true;
+			pollResult->success = true;
 		}
 	};
 }
 
 
-#endif //_STEAM_POOL_H_
+#endif //_STEAM_POLL_H_

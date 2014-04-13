@@ -2,7 +2,7 @@
 ;============================================================
 ;  File: Clist_nicer.dll
 ;  Plugin: Clist nicer
-;  Version: 0.9.2.1
+;  Version: 0.9.2.2
 ;  Authors: Pixel, egoDust, cyreve, Nightwish
 ;============================================================
 [Displays contacts, event notifications, protocol status.]
@@ -20,8 +20,6 @@ Ukončit Mirandu
 Ačkoliv byla výjimka zachycena a vy můžete pokračovat v práci s Mirandou, měli byste ji restartovat jakmile to bude možné. Výjimka může poškodit vnitřní datové struktury a a může mít zásadní vliv na stabilitu.
 [About CList Nicer+]
 O doplňku CList Nicer+
-[OK]
-OK
 [Clist Nicer+]
 Clist Nicer+
 [Copyright © 2004-2010 by the Miranda IM project, 2012-2013 by the Miranda NG project. More detailed copyright information can be found in the included README file.]
@@ -569,18 +567,18 @@ Zanořený (s rámováním)
 ;file \plugins\Clist_nicer\src\CLCButton.cpp
 [Show menu]
 Zobrazit nabídku
-[Show / hide offline contacts]
-Zobrazit / Skrýt uživatele offline
-[Toggle group mode]
-Přepnout režim skupiny
+[Hide offline contacts]
+Skrýt uživatele offline
+[Enable group mode]
+Povolit režim skupin
 [Find and add contacts]
 Vyhledat a přidat kontakty
 [Accounts]
 Účty
 [Open preferences]
 Otevřít nastavení
-[Toggle sounds]
-Přepnout zvuky
+[Disable sounds]
+Zakázat zvuky
 [Minimize contact list]
 Minimalizovat seznam
 [Status menu]
@@ -696,6 +694,8 @@ Přepnout online/offline
 Přepnout skupiny
 [Find contacts]
 Vyhledat kontakty
+[Toggle sounds]
+Přepnout zvuky
 [Show TabSRMM session list]
 Zobrazit seznam relací TabSRMM
 [Show TabSRMM menu]

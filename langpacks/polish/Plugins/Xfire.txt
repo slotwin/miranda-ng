@@ -11,7 +11,7 @@ Wsparcie dla protokołu xFire.
 [Password:]
 Hasło:
 [Login name:]
-Nazwa użytkownika:
+Użytkownik:
 [XFire]
 xFire
 [Nick:]
@@ -134,8 +134,6 @@ Wpisz hasło
 Dołącz
 [Set Nickname]
 Edytuj nick
-[OK]
-OK
 [Cancel]
 Anuluj
 [New xfire_games.ini]

@@ -3,12 +3,12 @@
 
 namespace SteamWebApi
 {
-	class LogInApi : public BaseApi
+	class LoginApi : public BaseApi
 	{
 	public:
-		class LogIn : public Result
+		class LoginResult : public Result
 		{
-			friend LogInApi;
+			friend LoginApi;
 
 		private:
 			std::string steamid;
@@ -22,21 +22,24 @@ namespace SteamWebApi
 			UINT32 GetMessageId() { return messageId; }
 		};
 		
-		static void LogOn(HANDLE hConnection, const char *token, LogIn *login)
+		static void Logon(HANDLE hConnection, const char *token, LoginResult *loginResult)
 		{
-			login->success = false;
+			loginResult->success = false;
 
-			CMStringA data;
-			data.AppendFormat("access_token=%s", token);
+			char data[256];
+			mir_snprintf(data, SIZEOF(data), "access_token=%s", token);
 
-			HttpRequest request(hConnection, REQUEST_POST, STEAM_API_URL "/ISteamWebUserPresenceOAuth/Logon/v0001");
+			SecureHttpPostRequest request(hConnection, STEAM_API_URL "/ISteamWebUserPresenceOAuth/Logon/v0001");
 			request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-			request.SetData(data.GetBuffer(), data.GetLength());
-			
+			request.SetData(data, strlen(data));
+
 			mir_ptr<NETLIBHTTPREQUEST> response(request.Send());
-			if (!response || response->resultCode != HTTP_STATUS_OK)
+			if (!response)
 				return;
-			
+
+			if ((loginResult->status = (HTTP_STATUS)response->resultCode) != HTTP_STATUS_OK)
+				return;
+
 			JSONNODE *root = json_parse(response->pData), *node;
 
 			node = json_get(root, "error");
@@ -45,18 +48,30 @@ namespace SteamWebApi
 				return;
 
 			node = json_get(root, "steamid");
-			login->steamid = ptrA(mir_u2a(json_as_string(node)));
+			loginResult->steamid = ptrA(mir_u2a(json_as_string(node)));
 
 			node = json_get(root, "umqid");
-			login->umqid = ptrA(mir_u2a(json_as_string(node)));
+			loginResult->umqid = ptrA(mir_u2a(json_as_string(node)));
 
 			node = json_get(root, "message");
-			login->messageId = json_as_int(node);
+			loginResult->messageId = json_as_int(node);
 
-			login->success = true;
+			loginResult->success = true;
+		}
+
+		static void Logoff(HANDLE hConnection, const char *token, const char *sessionId)
+		{
+			CMStringA data;
+			data.AppendFormat("access_token=%s", token);
+			data.AppendFormat("&umqid=%s", sessionId);
+
+			SecureHttpPostRequest request(hConnection, STEAM_API_URL "/ISteamWebUserPresenceOAuth/Logoff/v0001");
+			request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+			request.SetData(data.GetBuffer(), data.GetLength());
+			
+			mir_ptr<NETLIBHTTPREQUEST> response(request.Send());
 		}
 	};
 }
-
 
 #endif //_STEAM_LOGIN_H_

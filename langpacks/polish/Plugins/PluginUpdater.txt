@@ -6,7 +6,7 @@
 ;  Authors: Mataes, George Hazan
 ;============================================================
 [Plugin updater for Miranda NG.]
-Aktualizator wtyczek dla Mirandy NG
+Aktualizator wtyczek dla Mirandy NG.
 ;file \plugins\PluginUpdater\res\Resource.rc
 [Updates found!]
 Znaleziono aktualizacje!
@@ -77,9 +77,9 @@ PPM
 [Timeout]
 Wyświetlaj
 [0 = Default]
-0 - Domyślny
+0 - domyślnie
 [-1 = Infinite]
--1 - Nie chowaj
+-1 - nie chowaj
 [Sec]
 s
 [* Needs popup actions to be enabled]
@@ -119,6 +119,8 @@ Status
 Wtyczki
 [Icons]
 Ikony
+[Languages]
+Języki
 [Other]
 Inne
 [List is empty.]
@@ -154,9 +156,9 @@ Sprawdź aktualizacje
 Pobierz komponenty
 ;file \plugins\PluginUpdater\src\Utils.cpp
 ['Yes' Button]
-Przycisk 'Tak'
+Przycisk "Tak"
 ['No' Button]
-Przycisk 'Nie'
+Przycisk "Nie"
 [Plugin info]
 Informacje o wtyczkach
 [Plugin list]

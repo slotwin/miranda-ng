@@ -47,7 +47,7 @@ Ostrzeż przed usuwaniem modułów
 [Use popups when watched settings change values]
 Użyj popupów kiedy oglądane ustawienia zmieniają wartość.
 [Popup timeout (0 for infinite)]
-Wyświetlania (0 - Nie chowaj)
+Wyświetlania (0 - nie chowaj)
 [Background color]
 Kolor tła
 [Add a module to contact]
@@ -56,8 +56,6 @@ Dodaj moduł do kontaktu
 Dodaj nazwę modułu
 [Add to all contacts (Includes Settings)]
 Dodaj do wszystkich kontaktów (razem z ustawieniami)
-[OK]
-OK
 [Cancel]
 Anuluj
 [Edit Setting]
@@ -384,6 +382,6 @@ Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa warto
 [Database Setting Changed: \nModule: "%s" , Setting: "%s"\nNew Value: (DWORD) 0x%X]
 Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa wartość: (DWORD) 0x%X
 [Database Setting Changed: \nModule: "%s" , Setting: "%s"\nNew Value: "%s"]
-Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa wartość: %d
+Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa wartość: "%s"
 [Database Setting Changed: \nModule: "%s" , Setting: "%s"\nNew Value (UTF8): "%s"]
-Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa wartość (UTF8): %s
+Zmieniły się ustawienia profilu: \nModuł: "%s" , Ustawienie: "%s"\nNowa wartość (UTF8): "%s"

@@ -60,8 +60,6 @@ Ustaw tryb:
 O ustawieniach
 [All sets are shared between columns. However, only the checked ones will be applied to the current column. Use the right field to specify words putting every word on a separate line.]
 Wszystkie ustawienia są wspólne dla wszystkich kolumn, jednakże tylko te zaznaczone będą stosowane dla bieżącej kolumny. Użyj pola po prawej, by określić słowa, wpisując każde słowo w nowej linii.
-[OK]
-OK
 [Configure HistoryStats]
 Skonfiguruj HistoryStats
 [Apply]
@@ -524,7 +522,7 @@ Nie można przejść do okna konfiguracji HistoryStats tak długo jak opcje dial
 [You have unsaved settings. Do you want to save before running HistoryStats?]
 Ustawienia nie zostały zapisane. Czy chcesz zapisać przed uruchomieniem HistoryStats?
 [HistoryStats]
-HistoryStats
+Statystyki historii
 [Show warnings...]
 Pokaż błędy...
 [Show statistics]

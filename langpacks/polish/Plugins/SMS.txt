@@ -28,8 +28,6 @@ Wyślij SMS
 Do:
 [Add number to list]
 Dodaj numer do listy
-[&H]
-&H
 [Save number]
 Zapisz numer
 [Multiple >>]
@@ -63,13 +61,11 @@ Użyj sygnatury
 [Show server notifications]
 Pokazuj powiadomienia serwera
 [Auto popup on new message]
-Popup przy nowej wiadomości
+Popup dla nowej wiadomości
 [Save window position per contact]
 Zapisz pozycję okna dla kontaktu
 [SMS Message Sent]
 Wysłana wiadomość SMS
-[&OK]
-&OK
 [Message ID:]
 ID wiadomości:
 [Source:]

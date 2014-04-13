@@ -2,7 +2,7 @@
 ;============================================================
 ;  File: Clist_modern.dll
 ;  Plugin: Modern contact list
-;  Version: 0.9.0.12
+;  Version: 0.9.0.13
 ;  Authors: Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven
 ;============================================================
 [Displays contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enhanced metacontact cooperation.]
@@ -144,8 +144,6 @@ Uwzględnione grupy
 Pokaż kontakty w grupach
 [Include status modes]
 Uwzględniony tryby statusu
-[OK]
-OK
 [Cancel]
 Anuluj
 [Sticky contacts]
@@ -513,7 +511,7 @@ Użyj emotikon protokołu
 [Draw smileys on first line]
 Rysuj emotikony w pierwszej linii
 [Resize smileys and 'Listening to' icon]
-Rysuj emotikony i ikony 'Listening to'
+Rysuj emotikony i ikony "Listening to"
 [Align to right]
 Wyrównaj do prawej
 [Append nick if different from custom name]

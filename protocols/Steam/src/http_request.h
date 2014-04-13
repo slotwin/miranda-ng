@@ -5,7 +5,8 @@
 
 enum HTTP_STATUS
 {
-	HTTP_STATUS_OK = 200/*,
+	HTTP_STATUS_NONE = 0,
+	HTTP_STATUS_OK = 200,
 	HTTP_STATUS_BAD_REQUEST = 400,
 	HTTP_STATUS_UNAUTHORIZED = 401,
 	HTTP_STATUS_FORBIDDEN = 403,
@@ -13,10 +14,10 @@ enum HTTP_STATUS
 	HTTP_STATUS_METHOD_NOT_ALLOWED = 405,
 	HTTP_STATUS_TOO_MANY_REQUESTS = 429,
 	HTTP_STATUS_SERVICE_UNAVAILABLE = 503,
-	HTTP_STATUS_INSUFICIENTE_STORAGE = 507*/
+	HTTP_STATUS_INSUFICIENTE_STORAGE = 507
 };
 
-class HttpRequest : private NETLIBHTTPREQUEST//, public MZeroedObject
+class HttpRequest : protected NETLIBHTTPREQUEST//, public MZeroedObject
 {
 public:
 	HttpRequest(HANDLE hNetlibUser, int request, LPCSTR url)
@@ -28,11 +29,14 @@ public:
 		dataLength = 0;
 		headersCount = 0;
 		szResultDescr = NULL;
-		flags = NLHRF_HTTP11;
+		flags = NLHRF_HTTP11 | NLHRF_NODUMPSEND | NLHRF_DUMPASTEXT;
 		requestType = request;
 
 		m_hNetlibUser = hNetlibUser;
-		m_szUrl = mir_strdup(url);
+		szUrl = NULL;
+		m_szUrl = url;
+
+		AddHeader("User-Agent", "Steam App / Miranda / 0.0.1");
 	}
 
 	~HttpRequest()
@@ -46,10 +50,16 @@ public:
 			}
 			mir_free(headers);
 		}
+		if (szUrl != NULL)
+			mir_free(szUrl);
 		if (pData != NULL)
 			mir_free(pData);
 	}
 
+	void ResetFlags(int newFlags)
+	{
+		flags = newFlags;
+	}
 
 	void AddHeader(LPCSTR szName, LPCSTR szValue)
 	{
@@ -67,52 +77,10 @@ public:
 		if (pData != NULL)
 			mir_free(pData);
 		
-		dataLength = size;
+		dataLength = (int)size;
 		pData = (char*)mir_alloc(size);
 		memcpy(pData, data, size);
 	}
-
-	/*void AddBasicAuthHeader(LPCSTR szLogin, LPCSTR szPassword)
-	{
-		char cPair[128];
-		mir_snprintf(
-			cPair,
-			SIZEOF(cPair),
-			"%s:%s",
-			szLogin,
-			szPassword);
-
-		char *ePair = (char *)mir_base64_encode((BYTE*)cPair, (UINT)strlen(cPair));
-
-		char value[128];
-		mir_snprintf(
-			value,
-			SIZEOF(value),
-			"Basic %s",
-			ePair);
-
-		mir_free(ePair);
-
-		headers = (NETLIBHTTPHEADER*)mir_realloc(headers, sizeof(NETLIBHTTPHEADER)*(headersCount+1));
-		headers[headersCount].szName = mir_strdup("Authorization");
-		headers[headersCount].szValue = mir_strdup(value);
-		headersCount++;
-	}
-
-	void AddBearerAuthHeader(LPCSTR szValue)
-	{
-		char value[128];
-		mir_snprintf(
-			value,
-			SIZEOF(value),
-			"Bearer %s",
-			szValue);
-
-		headers = (NETLIBHTTPHEADER*)mir_realloc(headers, sizeof(NETLIBHTTPHEADER)*(headersCount+1));
-		headers[headersCount].szName = mir_strdup("Authorization");
-		headers[headersCount].szValue = mir_strdup(value);
-		headersCount++;
-	}*/
 
 	void AddUrlPart(LPCSTR szPart)
 	{
@@ -121,45 +89,73 @@ public:
 
 	void AddParameter(LPCSTR szName, LPCSTR szValue)
 	{
-		if (m_szUrl.Find('?') == -1)
-			m_szUrl.AppendFormat("?%s=%s", szName, szValue);
+		if (m_szUrl.find('?') == -1)
+			m_szUrl.append("?").append(szName).append("=").append(szValue);
 		else
-			m_szUrl.AppendFormat("&%s=%s", szName, szValue);
+			m_szUrl.append("&").append(szName).append("=").append(szValue);
 	}
 
-	void AddParameter(LPCSTR szName, int value)
+	void AddParameter(LPCSTR szValue)
 	{
-		if (m_szUrl.Find('?') == -1)
-			m_szUrl.AppendFormat("?%s=%i", szName, value);
+		if (m_szUrl.find('?') == -1)
+			m_szUrl.append("?").append(szValue);
 		else
-			m_szUrl.AppendFormat("&%s=%i", szName, value);
+			m_szUrl.append("&").append(szValue);
 	}
 
-	void AddParameter(LPCSTR szName, UINT64 value)
+	void SetTimeout(int timeout)
 	{
-		if (m_szUrl.Find('?') == -1)
-			m_szUrl.AppendFormat("?%s=%llu", szName, value);
-		else
-			m_szUrl.AppendFormat("&%s=%llu", szName, value);
+		timeout = timeout;
 	}
 
 	NETLIBHTTPREQUEST *Send()
 	{
-		szUrl = m_szUrl.GetBuffer();
-		/*CMStringA message; message.AppendFormat("Send request to %s", szUrl);
-		CallService(MS_NETLIB_LOG, (WPARAM)m_hNetlibUser, (LPARAM)message.GetBuffer());*/
-		return (NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)this);
+		szUrl = mir_strdup(m_szUrl.c_str());
+		NETLIBHTTPREQUEST *response = (NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)this);
+		mir_free(szUrl);szUrl = NULL;
+		return response;
+
 	}
 
 private:
-	CMStringA m_szUrl;
+	std::string m_szUrl;
 	HANDLE m_hNetlibUser;
 };
 
-/*class HttpPostRequest : public HttpRequest
+class HttpGetRequest : public HttpRequest
+{
+public:
+	HttpGetRequest(HANDLE hNetlibUser, LPCSTR url) : HttpRequest(hNetlibUser, REQUEST_GET, url) { }
+};
+
+class HttpPostRequest : public HttpRequest
 {
 public:
 	HttpPostRequest(HANDLE hNetlibUser, LPCSTR url) : HttpRequest(hNetlibUser, REQUEST_POST, url) { }
-};*/
+};
+
+class SecureHttpRequest : public HttpRequest
+{
+public:
+	SecureHttpRequest(HANDLE hNetlibUser, int request, LPCSTR url)
+		: HttpRequest(hNetlibUser, request, url)
+	{
+		flags = NLHRF_HTTP11 | NLHRF_SSL | NLHRF_NODUMPSEND | NLHRF_DUMPASTEXT;
+	}
+};
+
+class SecureHttpGetRequest : public SecureHttpRequest
+{
+public:
+	SecureHttpGetRequest(HANDLE hNetlibUser, LPCSTR url)
+		: SecureHttpRequest(hNetlibUser, REQUEST_GET, url) { }
+};
+
+class SecureHttpPostRequest : public SecureHttpRequest
+{
+public:
+	SecureHttpPostRequest(HANDLE hNetlibUser, LPCSTR url)
+		: SecureHttpRequest(hNetlibUser, REQUEST_POST, url) { }
+};
 
 #endif //_HTTP_REQUEST_H_

@@ -157,9 +157,9 @@ Wyłącz, jeśli okno wiadomości jest otwarte
 [Sec]
 s
 [0 = Default]
-0 - Domyślny
+0 - domyślnie
 [-1 = Infinite]
--1 - Nie chowaj
+-1 - nie chowaj
 [Per-contact settings]
 Osobne ustawienia kontaktów
 [Show always]
@@ -212,7 +212,7 @@ Dane kontaktu
 [Contact menu]
 Menu kontaktu
 [Dismiss popup]
-Anuluj popup
+Odrzuć popup
 [Pin popup]
 Przypnij popup
 [Copy to clipboard]
@@ -260,8 +260,6 @@ Nakładka w "trybie pełnoekranowym"
 Odśwież listę skórek
 [Popup Placement]
 Rozmieszczenie
-[OK]
-OK
 [Cancel]
 Anuluj
 [Popup Group]

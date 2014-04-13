@@ -50,8 +50,6 @@ Nie centruj chyba że bezczynny
 Podgląd
 [Alarm]
 Alarm
-[OK]
-OK
 [Cancel]
 Anuluj
 [Title:]
@@ -101,7 +99,7 @@ Nie włączaj na starcie
 [No reminder]
 Nie przypominaj
 [Dismiss]
-Zamknij
+Odrzuć
 [Snooze]
 Drzemka
 [Static]

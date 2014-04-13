@@ -10,8 +10,6 @@ Pokazuje powiadomienie kiedy jakiś kontakt zmieni swojego klienta.
 ;file \plugins\ClientChangeNotify\res\Resources.rc
 [ClientChangeNotify error]
 Błąd ClientChangeNotify
-[OK]
-OK
 [Fingerprint plugin not found.]
 Nie znaleziono wtyczki Fingerprint.
 [ClientChangeNotify requires it to work properly.]
@@ -39,9 +37,9 @@ Wyświetlaj
 [Sec]
 s
 [0 = Default]
-0 - Domyślny
+0 - domyślnie
 [-1 = Infinite]
--1 - Nie chowaj
+-1 - nie chowaj
 [Colors]
 Kolory
 [Background]

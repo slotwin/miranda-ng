@@ -6,49 +6,69 @@ namespace SteamWebApi
 	class FriendApi : public BaseApi
 	{
 	public:
-		struct Friend : public Result
+		struct Summary : public Result
 		{
 			friend FriendApi;
-			//LIST<char> friendIds;
 		
 		private:
 			std::string steamId;
 
 			std::wstring nickname;
+			std::wstring realname;
+			std::string countryCode;
 			std::string homepage;
 			std::string avatarUrl;
+			std::wstring gameInfo;
+			UINT32 gameId;
 
-			int status;
+			int state;
 
+			DWORD created;
 			DWORD lastEvent;
 
 		public:
 			const char *GetSteamId() const { return steamId.c_str(); }
 			const wchar_t *GetNickname() const { return nickname.c_str(); }
+			const wchar_t *GetRealname() const { return realname.c_str(); }
+			const char *GetCountryCode() const { return countryCode.c_str(); }
 			const char *GetHomepage() const { return homepage.c_str(); }
 			const char *GetAvatarUrl() const { return avatarUrl.c_str(); }
-			int GetStatus() const { return status; }
+			const wchar_t *GetGameInfo() const { return gameInfo.c_str(); }
+			const DWORD GetGameId() const { return gameId; }
+			int GetState() const { return state; }
+			const DWORD GetCreated() const { return created; }
 			const DWORD GetLastEvent() const { return lastEvent; }
 		};
 
-		static void LoadSummaries(HANDLE hConnection, const char *token, const char *steamId, Friend *result)
+		struct Summaries : public Result
 		{
-			result->success = false;
+			friend FriendApi;
 
-			HttpRequest *request = new HttpRequest(hConnection, REQUEST_GET, STEAM_API_URL "/ISteamUserOAuth/GetUserSummaries/v0001");
-			request->AddParameter("access_token", token);
-			request->AddParameter("steamids", steamId);
+		private:
+			std::vector<Summary*> items;
 
-			mir_ptr<NETLIBHTTPREQUEST> response(request->Send());
-			delete request;
+		public:
+			size_t GetItemCount() const { return items.size(); }
+			const Summary *GetAt(int idx) const { return items.at(idx); }
+		};
 
-			if (!response || response->resultCode != HTTP_STATUS_OK)
+		static void LoadSummaries(HANDLE hConnection, const char *token, const char *steamIds, Summaries *summaries)
+		{
+			summaries->success = false;
+
+			SecureHttpGetRequest request(hConnection, STEAM_API_URL "/ISteamUserOAuth/GetUserSummaries/v0001");
+			request.AddParameter("access_token", token);
+			request.AddParameter("steamids", steamIds);
+
+			mir_ptr<NETLIBHTTPREQUEST> response(request.Send());
+			if (!response)
+				return;
+
+			if ((summaries->status = (HTTP_STATUS)response->resultCode) != HTTP_STATUS_OK)
 				return;
 
 			JSONNODE *root = json_parse(response->pData), *node, *child;
 
-			/*node = json_get(root, "response");
-			root = json_as_node(node);*/
 			node = json_get(root, "players");
 			root = json_as_array(node);
 			if (root != NULL)
@@ -59,31 +79,50 @@ namespace SteamWebApi
 					if (child == NULL)
 						break;
 
+					Summary *item = new Summary();
+
 					node = json_get(child, "steamid");
-					ptrA cSteamId(ptrA(mir_u2a(json_as_string(node))));
-					if (lstrcmpA(steamId, cSteamId))
-						return;
-					result->steamId = steamId;
+					item->steamId = ptrA(mir_u2a(json_as_string(node)));
 
 					node = json_get(child, "personaname");
-					result->nickname = json_as_string(node);
+					item->nickname = json_as_string(node);
+
+					node = json_get(child, "realname");
+					if (node != NULL)
+						item->realname = json_as_string(node);
+
+					node = json_get(child, "loccountrycode");
+					if (node != NULL)
+						item->countryCode = ptrA(mir_u2a(json_as_string(node)));
 
 					node = json_get(child, "personastate");
-					result->status = json_as_int(node);
+					item->state = json_as_int(node);
 
 					node = json_get(child, "profileurl");
-					result->homepage = ptrA(mir_u2a(json_as_string(node)));
+					item->homepage = ptrA(mir_u2a(json_as_string(node)));
+
+					node = json_get(child, "timecreated");
+					item->created = json_as_int(node);
 
 					node = json_get(child, "lastlogoff");
-					//LastEventDateTS
-					result->lastEvent = json_as_int(node);
+					item->lastEvent = json_as_int(node);
 
 					node = json_get(child, "avatarfull");
-					result->avatarUrl = ptrA(mir_u2a(json_as_string(node)));
+					item->avatarUrl = ptrA(mir_u2a(json_as_string(node)));
+
+					node = json_get(child, "gameextrainfo");
+					item->gameInfo = json_as_string(node);
+
+					node = json_get(child, "gameid");
+					item->gameId = json_as_int(node);
+
+					summaries->items.push_back(item);
 				}
 			}
+			else
+				return;
 
-			result->success = true;
+			summaries->success = true;
 		}
 	};
 }

@@ -58,7 +58,7 @@ int CSendFTPFile::Send()
 	 * Returns 0 on success or nonzero on failure
 	 * if (!wParam || !lParam) return 1
 	 ********************************************************************************************/
-	mir_freeAndNil(m_pszFileName);
+	mir_free(m_pszFileName);
 	m_pszFileName = GetFileNameA(m_pszFile);
 	size_t size = sizeof(char)*(strlen(m_pszFileName)+2);
 	m_pszFileName = (char*)mir_realloc(m_pszFileName, size);
@@ -74,7 +74,7 @@ void CSendFTPFile::SendThread() {
 
 	INT_PTR ret = FTPFileUploadA(m_hContact, FNUM_DEFAULT, FMODE_RAWFILE, &m_pszFileName,1);
 	if (ret != 0) {
-		Error(TranslateT("%s (%i):\nCould not add a share to the FTP File plugin."),TranslateTS(m_pszSendTyp),ret);
+		Error(LPGENT("%s (%i):\nCould not add a share to the FTP File plugin."),TranslateTS(m_pszSendTyp),ret);
 		Exit(ret); return;
 	}
 

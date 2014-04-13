@@ -37,9 +37,7 @@ class CSendImageShack : public CSend {
 		~CSendImageShack();
 
 		int Send();
-		int SendSilent() {m_bAsync=m_Silent=true; return Send();};
 		char* GetURL(){return m_Url;};
-		char* GetError(){return mir_t2a(m_ErrorMsg);};
 
 	protected:
 		char*					m_pszFileName;
@@ -56,7 +54,6 @@ class CSendImageShack : public CSend {
 		char*					m_MFDRboundary;
 		void					MFDR_Reset();
 
-		bool					m_Silent;
 		void					SendThread();
 		static void				SendThreadWrapper(void * Obj);
 

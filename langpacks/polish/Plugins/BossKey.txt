@@ -34,12 +34,8 @@ Przywróć poprzedni status
 Skrót
 [Password:]
 Hasło:
-[OK]
-OK
 [Cancel]
 Anuluj
-[EN]
-EN
 [Workstation is locked]
 Komputer jest zablokowany
 [Screen Saver is running]

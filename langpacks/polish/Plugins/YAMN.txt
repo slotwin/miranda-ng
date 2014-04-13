@@ -6,10 +6,8 @@
 ;  Authors: y_b, tweety, majvan
 ;============================================================
 [Mail notifier and browser for Miranda NG. Included POP3 protocol.]
-Powiadomienia o poczcie i przeglądarka dla Mirandy NG. Dołączona obsługa POP3
+Powiadomienia o poczcie i przeglądarka dla Mirandy NG. Dołączona obsługa POP3.
 ;file \plugins\YAMN\res\YAMN.rc
-[OK]
-OK
 [Installed plugins]
 Zainstalowane wtyczki
 [Version:]
@@ -21,7 +19,7 @@ Własność:
 [Contact:]
 Kontakt:
 [WWW:]
-WWW:
+Strona domowa:
 [Account]
 Konto
 [Name:]
@@ -35,7 +33,7 @@ SSL
 [APOP]
 APOP
 [User Name:]
-Login:
+Użytkownik:
 [Password:]
 Hasło:
 [Codepage:]
@@ -63,13 +61,13 @@ Sprawdź z menu
 [Use contact notification for this account]
 Użyj powiadomienia kontaktu dla tego konta
 [Replace nickname]
-Zastąp przydomek
+Zastąp nick
 [Disable Events]
 Wyłącz zdarzenia
 [Notifications]
 Powiadomienia
 [New Mail]
-Nowy mail
+Nowy e-mail
 [Sound]
 Dźwięk
 [Message]
@@ -123,11 +121,11 @@ Przycisk paska narzędzi "Sprawdź pocztę"
 [Enable YAMN Main Menu]
 Włącz YAMN w menu głównym
 [Show YAMN as a Protocol (Require Restart)]
-Pokaż YAMN jako Protokół (Wymagany restart)
+Pokaż YAMN jako protokół (wymagany restart)
 [MailBrowser Options]
 Opcje przeglądania wiadomości
 [Enable Close on Delete Button]
-Włącz przycisk 'Zamknij przy Usuwaniu'
+Włącz przycisk "Zamknij przy usuwaniu"
 [Show long localised date]
 Pokaż długi, lokalny format daty
 [Don't show today's date]
@@ -147,7 +145,7 @@ Więcej popupów
 [Use custom color]
 Użyj niestandardowych kolorów
 [No new mail notifications]
-Powiadomienie o braku nowych wiadomości E-mail
+Powiadomienie o braku nowych wiadomości e-mail
 [Popup if no mail]
 Popup jeśli brak e-maili
 [Persistant message]
@@ -174,7 +172,7 @@ Włącz aplikacje
 [YAMN]
 Powiadomienia e-mail
 [YAMN Account Folder]
-Folder kont mailowych
+Folder kont YAMN
 [Check mail]
 Sprawdź wiadomości e-mail
 [Connect Fail]
@@ -202,9 +200,9 @@ Nieznany błąd
 [%s - %d new mail messages, %d total]
 Konto: %s, Nowych wiadomości: %d, Łącznie: %d
 [- new mail message(s)]
-- nowych wiadomości E-mail
+- nowych wiadomości e-mail
 [%s : %d new mail message(s), %d total]
-%s: nowych wiadomości: %d, Łącznie: %d
+%s: Nowych wiadomości: %d, Łącznie: %d
 [%d new mail message(s), %d total]
 Nowych wiadomości: %d, Łącznie: %d
 [No new mail message, %d spam(s)]

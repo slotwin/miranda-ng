@@ -11,24 +11,26 @@ namespace SteamWebApi
 			friend FriendListApi;
 
 		private:
-			std::vector<std::string> friendIds;
+			std::vector<std::string> items;
 
 		public:
-			int GetCount() const { return friendIds.size(); }
-
-			const char * operator[](int idx) const { return friendIds.at(idx).c_str(); }
+			size_t GetItemCount() const { return items.size(); }
+			const char * GetAt(int idx) const { return items.at(idx).c_str(); }
 		};
 
 		static void Load(HANDLE hConnection, const char *token, const char *steamId, FriendList *friendList)
 		{
 			friendList->success = false;
 
-			HttpRequest request(hConnection, REQUEST_GET, STEAM_API_URL "/ISteamUserOAuth/GetFriendList/v0001");
+			SecureHttpGetRequest request(hConnection, STEAM_API_URL "/ISteamUserOAuth/GetFriendList/v0001");
 			request.AddParameter("access_token", token);
 			request.AddParameter("steamid", steamId);
 
 			mir_ptr<NETLIBHTTPREQUEST> response(request.Send());
-			if (!response || response->resultCode != HTTP_STATUS_OK)
+			if (!response)
+				return;
+
+			if ((friendList->status = (HTTP_STATUS)response->resultCode) != HTTP_STATUS_OK)
 				return;
 
 			JSONNODE *root = json_parse(response->pData), *node, *child;
@@ -44,7 +46,7 @@ namespace SteamWebApi
 						break;
 
 					node = json_get(child, "steamid");
-					friendList->friendIds
+					friendList->items
 						.push_back((char*)ptrA(mir_u2a(json_as_string(node))));
 				}
 			}

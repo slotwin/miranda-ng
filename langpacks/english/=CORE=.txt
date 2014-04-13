@@ -2,7 +2,6 @@
 [Enter account name (for example, My Google)]
 [Choose the protocol type]
 [Specify the internal account name (optional)]
-[OK]
 [Cancel]
 [Add %s]
 [&Add]
@@ -227,7 +226,6 @@
 [You can group/ungroup icons by selecting them (CTRL+left click) and using the popup menu (right click)]
 [Add to Existing MetaContact]
 [Please select a MetaContact:]
-[&OK]
 [Sort Alphabetically]
 [Editing]
 [Information]
@@ -1411,8 +1409,6 @@
 [JPEG bitmaps]
 [GIF bitmaps]
 [PNG bitmaps]
-;file \src\modules\utils\enterstring.cpp
-[OK (%d)]
 ;file \src\modules\utils\path.cpp
 [Avatars]
 [Avatars root folder]

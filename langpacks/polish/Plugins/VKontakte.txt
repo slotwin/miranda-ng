@@ -38,8 +38,6 @@ Wyślij
 Anuluj
 [Invite user to chat]
 Zaproś użytkownika do czatu
-[OK]
-OK
 [Choose one of your contacts to be invited:]
 Wybierz jeden z kontaktów, który chcesz zaprosić:
 [Create group chat]
@@ -74,11 +72,11 @@ Ostrzeżenie
 [&Invite a user]
 &Zaproś użytkownika
 [View/change &title]
-Pokaż/zmień &nazwę
+Pokaż/Zmień &nazwę
 [&Destroy room]
 &Zniszcz pokój
 [&User details]
-Dane &użytkownika
+Dane &kontaktu
 [&Kick]
 &Wyrzuć
 ;file \protocols\VKontakte\src\vk_options.cpp

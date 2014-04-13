@@ -249,11 +249,11 @@ std::string utils::text::edit_html(std::string data)
 	new_string = "";
 	while (end != std::string::npos)
 	{
-		end = data.find("translate_story_link\\\">", start);
+		end = data.find("role=\\\"button\\\">", start);
 		if (end != std::string::npos)
 		{
 			new_string += data.substr(start, end - start);
-			start = data.find("<\\/div", end);
+			start = data.find("<\\/a", end);
 		} else {
 			new_string += data.substr(start, data.length() - start);
 		}
@@ -302,7 +302,7 @@ std::string utils::text::remove_html(std::string data)
 
 	for (std::string::size_type i = 0; i < data.length(); i++)
 	{
-		if (data.at(i) == '<' && data.at(i+1) != ' ')
+		if (data.at(i) == '<' && (i+1) < data.length() && data.at(i+1) != ' ')
 		{
 			i = data.find(">", i);
 			if (i == std::string::npos)

@@ -8,16 +8,46 @@
 [Internet Relay Chat (IRC) protocol support for Miranda NG.]
 Zapewnia obsługę protokołu Internet Relay Chat (IRC) w Mirandzie NG.
 ;file \protocols\IRCG\res\IRC.rc
+[Default network]
+Sieć domyślna
+[Enable]
+Włącz
+[Server name]
+Nazwa serwera
+[Internet address]
+Adres internetowy
+[SSL]
+SSL
+[Port range]
+Zakres portów
+[Password]
+Hasło:
 [&Add]
 &Dodaj
 [&Edit]
 &Edytuj
 [&Del]
 &Usuń
-[Enable]
-Włącz
+[User info - Required]
+Informacje użytkownika - Wymagane
+[Nick]
+Nick
+[Alternative nick]
+Alternatywny nick
+[Full name (e-mail)]
+Nazwa (e-mail)
+[User ID (Ident)]
+ID użytkownika
+[Ident]
+Ident
+[System]
+System
+[Port]
+Port
 [only while connecting]
 tylko w trakcie łączenia
+[Other]
+Inne
 [Force visible (-i)]
 Wymuś widoczność - tryb (-i)
 [Rejoin channel if kicked]
@@ -37,43 +67,13 @@ Utrzymuj połączenie
 [Automatically join on invite]
 Automatycznie dołącz po zaproszeniu
 ['Old style' mode changes]
-'Stary styl' zmiany trybów
+"Stary styl" zmiany trybów
 [Update online statuses for users]
 Aktualizuj statusy połączonych kontaktów
-[Update statuses in channel nick list]
-Aktualizuj statusy na liście użytkowników kanału
-[Internet address]
-Adres internetowy
-[Port range]
-Zakres portów
-[Nick]
-Nick
-[User ID (Ident)]
-ID użytkownika
-[Full name (e-mail)]
-Nazwa (e-mail)
-[Password]
-Hasło:
-[Server name]
-Nazwa serwera
-[Alternative nick]
-Alternatywny nick
-[Ident]
-Ident
-[System]
-System
-[Port]
-Port
-[Default network]
-Sieć domyślna
-[User info - Required]
-Informacje użytkownika - Wymagane
-[Other]
-Inne
 [Check every (s):]
 Sprawdzaj co (s):
-[SSL]
-SSL
+[Update statuses in channel nick list]
+Aktualizuj statusy na liście użytkowników kanału
 [Don't check if more than (users):]
 Nie sprawdzaj, jeśli więcej niż (użytkowników):
 [User information]
@@ -112,8 +112,6 @@ Serwer zwrócił następującą informację. Pamiętaj, że ta informacja może 
 Informacja CTCP
 [Question]
 Pytanie
-[&OK]
-&OK
 [&Cancel]
 &Anuluj
 [Perform]
@@ -226,8 +224,8 @@ Protokół Klient-do-Klienta
 Rozmowy Klient-do-Klienta
 [Send mode:]
 Tryb wysyłania:
-[Packet size (b):]
-Rozmiar pakietu (b):
+[Packet size (bytes):]
+Rozmiar pakietu (bajty):
 [Get IP address from server]
 Pobierz IP z serwera
 [Auto-accept from:]
@@ -276,8 +274,6 @@ Ignoruj zdarzenia
 Serwer:
 [Password:]
 Hasło:
-[Alternate nick]
-Alternatywny nick
 ;file \protocols\IRCG\src\clist.cpp
 [CTCP chat request from %s]
 Żądanie rozmowy CTCP od %s
@@ -325,7 +321,7 @@ Pobrano: %u kanałów
 [(probably truncated by server)]
 (prawdopodobnie okrojona przez serwer)
 [Change nickname]
-Zmień ksywkę
+Zmień nick
 [IRC error]
 Błąd IRC
 [Unknown]
@@ -522,7 +518,7 @@ Dodaj ignorowanie
 Edytuj ignorowanie
 [Account]
 Konto
-[DCC'n CTCP]
+[DCC and CTCP]
 DCC i CTCP
 [Advanced]
 Zaawansowane
@@ -530,11 +526,11 @@ Zaawansowane
 [WallOps from %s: ]
 WallOps od %s:
 [%s invites you to %s]
-%s zaprasza ciebie na %s
+%s zaprasza do %s
 [%s is away]
-%s jest oddalony
+%s ma status Zaraz wracam
 [These are online: ]
-Online są:
+Dostępni są:
 [CTCP %s reply sent to %s]
 Odpowiedź CTCP %s wysłano do %s
 [CTCP %s reply sent to %s: %s]

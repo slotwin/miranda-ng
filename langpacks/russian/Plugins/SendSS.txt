@@ -43,18 +43,24 @@
 &Закрыть
 [Edit]
 Изменить
-[C&lient Area]
-Сод&ержимое
 [Caption:]
 Заголовок:
 [Size (HxW):]
 Размер (ВxШ):
-[An unknown error has occurred.]
-Неизвестная ошибка.
+[C&lient Area]
+Сод&ержимое
+[&Copy]
+&Копировать
+[Close]
+Закрыть
 [Error]
 Ошибка
+[An unknown error has occurred.]
+Неизвестная ошибка.
 [Unknown Error]
 Неизвестная ошибка
+[File transfer]
+Передача файла
 [Could not start the HTTP Server plugin.]
 Не могу запустить плагин HTTP Сервер.
 [Retry]
@@ -93,10 +99,6 @@ HTTP подключение SendSS
 Курсор рабочий стол
 [Default]
 По умолчанию
-[Overlay on]
-Оверлей вкл
-[Overlay off]
-Оверлей выкл
 [Help]
 Справка
 [Open Folder]
@@ -115,8 +117,6 @@ HTTP подключение SendSS
 Вперёд
 [Update]
 Обновить
-[Apply]
-Применить
 [Down arrow]
 Вниз
 [Buttons]

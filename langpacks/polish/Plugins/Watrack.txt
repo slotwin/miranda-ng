@@ -12,7 +12,7 @@ Emuluj klawisze multimedialne
 [xStatus will cleared before text changing and restored with new text later.]
 xStatus zostanie wyczyszczony przed zmianą tekstu i ustawiony na nowo później.
 [Paste played music info into message window or status text]
-Wklej informacje o odtwarzanych multimediach w oknie rozmowy lub statusie
+Wkleja informacje o odtwarzanych multimediach w oknie rozmowy lub statusie.
 [Use XStatus]
 Użyj xStatusu
 [If this option is "ON", XStatus doesn't depend on protocol status.]
@@ -544,9 +544,9 @@ Status (szablon)
 [Set XStatus when...]
 Użyj xStatus kiedy...
 [XStatus is empty or 'Music']
-xStatus jest pusty lub 'Muzyka'
+xStatus jest pusty lub "Muzyka"
 ['Music' status is set]
-status to 'Muzyka'
+status to "Muzyka"
 [any XStatus is set]
 jakikolwiek xStatus
 [Players list\n(F1 for note)]
@@ -652,3 +652,7 @@ Suwak - po najechaniu
 Suwak - po naciśnięciu
 [WATrack status]
 Status WATrack
+[Enable WATrack]
+Włącz WATrack
+[Disable WATrack]
+Wyłącz WATrack
