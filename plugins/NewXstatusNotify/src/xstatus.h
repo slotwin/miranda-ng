@@ -50,9 +50,8 @@
 #define DEFAULT_POPUP_NEW			TranslateT("changed %N to: %T%D%I") 
 #define DEFAULT_POPUP_CHANGEMSG		TranslateT("changed %N message to:%D%I") 
 #define DEFAULT_POPUP_REMOVE		TranslateT("removed %N") 
-#define DEFAULT_POPUP_STATUSMESSAGE	LPGEN("changed status message to %n")
-#define DEFAULT_POPUP_SMCHANGE		LPGEN("changed status message to %n")
-#define DEFAULT_POPUP_SMREMOVE		LPGEN("removed status message")
+#define DEFAULT_POPUP_NEWSMSG		TranslateT("changed status message to %n")
+#define DEFAULT_POPUP_SMSGREMOVE	TranslateT("removed status message")
 
 #define DEFAULT_LOG_DELIMITER		_T(": ")
 #define DEFAULT_LOG_NEW				TranslateT("changed %N @ %T%D%I") 
@@ -90,12 +89,6 @@ typedef struct tagDBEVENT
 	MCONTACT hContact;
 	HANDLE hDBEvent;
 } DBEVENT;
-
-typedef struct tagPROTOTEMPLATE
-{
-	TCHAR *ProtoName;
-	TCHAR ProtoTemplate[MAX_PATH];
-} PROTOTEMPLATE;
 
 TCHAR *GetDefaultXstatusName(int statusID, char *szProto, TCHAR *buff, int bufflen);
 XSTATUSCHANGE *NewXSC(MCONTACT hContact, char *szProto, int xstatusType, int action, TCHAR *stzTitle, TCHAR *stzText);

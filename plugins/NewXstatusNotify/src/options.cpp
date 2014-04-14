@@ -24,8 +24,6 @@
 OPTIONS opt = {0};
 TEMPLATES templates = {0};
 BOOL UpdateListFlag = FALSE;
-LIST<PROTOTEMPLATE> ProtoTemplates(10);
-int LastItem = 0;
 
 INT_PTR CALLBACK DlgProcAutoDisableOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -36,12 +34,16 @@ void LoadTemplates()
 	DBGetStringDefault(0, MODULE, "TPopupChangeMsg", templates.PopupNewMsg, SIZEOF(templates.PopupNewMsg), DEFAULT_POPUP_CHANGEMSG);
 	DBGetStringDefault(0, MODULE, "TPopupRemoval", templates.PopupRemove, SIZEOF(templates.PopupRemove), DEFAULT_POPUP_REMOVE);
 
+	DBGetStringDefault(0, MODULE, "TPopupNewSMsg", templates.PopupNewSMsg, SIZEOF(templates.PopupNewSMsg), DEFAULT_POPUP_NEWSMSG);
+	DBGetStringDefault(0, MODULE, "TPopupSMsgRemoval", templates.PopupSMsgRemove, SIZEOF(templates.PopupSMsgRemove), DEFAULT_POPUP_SMSGREMOVE);
+
 	DBGetStringDefault(0, MODULE, "TLogDelimiter", templates.LogDelimiter, SIZEOF(templates.LogDelimiter), DEFAULT_LOG_DELIMITER);
 	DBGetStringDefault(0, MODULE, "TLogChange", templates.LogNewXstatus, SIZEOF(templates.LogNewXstatus), DEFAULT_LOG_NEW);
 	DBGetStringDefault(0, MODULE, "TLogChangeMsg", templates.LogNewMsg, SIZEOF(templates.LogNewMsg), DEFAULT_LOG_CHANGEMSG);
 	DBGetStringDefault(0, MODULE, "TLogRemoval", templates.LogRemove, SIZEOF(templates.LogRemove), DEFAULT_LOG_REMOVE);
 	DBGetStringDefault(0, MODULE, "TLogOpening", templates.LogOpening, SIZEOF(templates.LogOpening), DEFAULT_LOG_OPENING);
 	templates.PopupFlags = db_get_b(0, MODULE, "TPopupFlags", NOTIFY_NEW_XSTATUS | NOTIFY_NEW_MESSAGE);
+	templates.PopupSMsgFlags = db_get_b(0, MODULE, "TPopupSMsgFlags", NOTIFY_NEW_MESSAGE);
 	templates.LogFlags = db_get_b(0, MODULE, "TLogFlags", NOTIFY_NEW_XSTATUS | NOTIFY_NEW_MESSAGE | NOTIFY_OPENING_ML);
 }
 
@@ -86,7 +88,9 @@ void LoadOptions()
 	opt.LTruncateMsg		= db_get_b(0, MODULE, "LTruncateMsg", 0);
 	opt.LMsgLen				= db_get_dw(0, MODULE, "LMsgLen", 128);
 	// IDD_OPT_SMPOPUP
-	opt.PopupOnConnect		= db_get_b(0, MODULE, "PopupOnConnect", 0);
+	opt.PSMOnConnect		= db_get_b(0, MODULE, "PSMOnConnect", 0);
+	opt.PSMTruncate			= db_get_b(0, MODULE, "PSMTruncate", 0);
+	opt.PSMLen				= db_get_dw(0, MODULE, "PSMLen", 64);
 	// OTHER
 	opt.TempDisabled		= db_get_b(0, MODULE, "TempDisable", 0);
 	opt.EnableLastSeen		= db_get_b(0, MODULE, "EnableLastSeen", 0);
@@ -100,6 +104,8 @@ void SaveTemplates()
 	db_set_ts(0, MODULE, "TPopupChange", templates.PopupNewXstatus);
 	db_set_ts(0, MODULE, "TPopupChangeMsg", templates.PopupNewMsg);
 	db_set_ts(0, MODULE, "TPopupRemoval", templates.PopupRemove);
+	db_set_ts(0, MODULE, "TPopupNewSMsg", templates.PopupNewMsg);
+	db_set_ts(0, MODULE, "TPopupSMsgRemoval", templates.PopupRemove);
 	db_set_ts(0, MODULE, "TLogDelimiter", templates.LogDelimiter);
 	db_set_ts(0, MODULE, "TLogChange", templates.LogNewXstatus);
 	db_set_ts(0, MODULE, "TLogChangeMsg", templates.LogNewMsg);
@@ -107,14 +113,6 @@ void SaveTemplates()
 	db_set_ts(0, MODULE, "TLogOpening", templates.LogOpening);
 	db_set_b(0, MODULE, "TPopupFlags", templates.PopupFlags);
 	db_set_b(0, MODULE, "TLogFlags", templates.LogFlags);
-
-	for (int i = 0; i < ProtoTemplates.getCount(); i++) {
-		PROTOTEMPLATE *prototemplate = ProtoTemplates[i];
-		TCHAR str[MAX_PATH];
-		mir_sntprintf(str, SIZEOF(str), _T("%s_TSMChange"), prototemplate->ProtoName);
-		char *szstr = mir_t2a(str);
-		db_set_ts(0, MODULE, szstr, prototemplate->ProtoTemplate);
-	}
 }
 
 void SaveOptions()
@@ -158,7 +156,9 @@ void SaveOptions()
 	db_set_b(0, MODULE, "LTruncateMsg", opt.LTruncateMsg);
 	db_set_dw(0, MODULE, "LMsgLen", opt.LMsgLen);
 	// IDD_OPT_SMPOPUP
-	db_set_b(0, MODULE, "PopupOnConnect", opt.PopupOnConnect);
+	db_set_b(0, MODULE, "PSMOnConnect", opt.PSMOnConnect);
+	db_set_b(0, MODULE, "PSMTruncate", opt.PSMTruncate);
+	db_set_dw(0, MODULE, "PSMLen", opt.PSMLen);
 }
 
 INT_PTR CALLBACK DlgProcGeneralOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -543,13 +543,18 @@ int ResetTemplatesToDefault(HWND hwndDlg)
 		SetDlgItemText(hwndDlg, IDC_ED_TCHANGE, DEFAULT_POPUP_NEW);
 		SetDlgItemText(hwndDlg, IDC_ED_TCHANGEMSG, DEFAULT_POPUP_CHANGEMSG);
 		SetDlgItemText(hwndDlg, IDC_ED_TREMOVE, DEFAULT_POPUP_REMOVE);
-		SetDlgItemText(hwndDlg, IDC_POPUPTEXT, TranslateT(DEFAULT_POPUP_STATUSMESSAGE));
+		SetDlgItemText(hwndDlg, IDC_ED_TNEWSMSG, DEFAULT_POPUP_NEWSMSG);
+		SetDlgItemText(hwndDlg, IDC_ED_TSMSGREMOVE, DEFAULT_POPUP_SMSGREMOVE);
 		CheckDlgButton(hwndDlg, IDC_CHK_XSTATUSCHANGE, 1);
 		CheckDlgButton(hwndDlg, IDC_CHK_MSGCHANGE, 1);
 		CheckDlgButton(hwndDlg, IDC_CHK_REMOVE, 1);
+		CheckDlgButton(hwndDlg, IDC_CHK_NEWSMSG, 1);
+		CheckDlgButton(hwndDlg, IDC_CHK_SMSGREMOVE, 1);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), TRUE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), TRUE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), TRUE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), TRUE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), TRUE);
 	}
 
 	return result;
@@ -557,8 +562,7 @@ int ResetTemplatesToDefault(HWND hwndDlg)
 
 INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
+	switch (msg) {
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
@@ -599,46 +603,39 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		}
 		case WM_COMMAND:
 		{
-			switch (HIWORD(wParam))
-			{
-				case BN_CLICKED:
-				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_CHK_CUTMSG:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_MSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTMSG));
+			switch (HIWORD(wParam)) {
+			case BN_CLICKED:
+				switch (LOWORD(wParam)) {
+					case IDC_CHK_CUTMSG:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_MSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTMSG));
+						break;
+					case IDC_CHK_XSTATUSCHANGE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE));
+						break;
+					case IDC_CHK_MSGCHANGE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE));
+						break;
+					case IDC_CHK_REMOVE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE));
+						break;
+					case IDC_BT_VARIABLES:
+						MessageBox(hwndDlg, VARIABLES_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
+						break;
+					case IDC_BT_RESET:
+						if (ResetTemplatesToDefault(hwndDlg) == IDYES)
 							break;
-						case IDC_CHK_XSTATUSCHANGE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE));
-							break;
-						case IDC_CHK_MSGCHANGE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE));
-							break;
-						case IDC_CHK_REMOVE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE));
-							break;
-						case IDC_BT_VARIABLES:
-							MessageBox(hwndDlg, VARIABLES_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
-							break;
-						case IDC_BT_RESET:
-							if (ResetTemplatesToDefault(hwndDlg) == IDYES)
-								break;
-							else
-								return FALSE;
-					}
-
-					if (LOWORD(wParam) != IDC_BT_VARIABLES)
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-
-					break;
-				}
-				case EN_CHANGE:
-				{
-					if ((HWND)lParam == GetFocus())
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					break;
+						else
+							return FALSE;
 				}
 
+				if (LOWORD(wParam) != IDC_BT_VARIABLES)
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+
+				break;
+			case EN_CHANGE:
+				if ((HWND)lParam == GetFocus())
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				break;
 			}
 
 			return TRUE;
@@ -675,16 +672,32 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 bool IsSuitableProto(PROTOACCOUNT *pa)
 {
-	return (pa != NULL && !pa->bDynDisabled && pa->bIsEnabled && CallProtoService(pa->szProtoName, PS_GETCAPS, PFLAGNUM_2, 0 ) != 0 );
+	return (pa != NULL && !pa->bDynDisabled && pa->bIsEnabled && CallProtoService(pa->szProtoName, PS_GETCAPS, PFLAGNUM_2, 0) != 0);
 }
 
 INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
 		{
-			CheckDlgButton(hwndDlg, IDC_ONCONNECT, opt.PopupOnConnect);
+			TranslateDialogDefault(hwndDlg);
+
+			SendDlgItemMessage(hwndDlg, IDC_ED_SMSGLEN, EM_LIMITTEXT, 3, 0);
+			SendDlgItemMessage(hwndDlg, IDC_UD_SMSGLEN, UDM_SETRANGE, 0, MAKELONG(999, 1));
+
+			CheckDlgButton(hwndDlg, IDC_ONCONNECT, opt.PSMOnConnect);
+			CheckDlgButton(hwndDlg, IDC_CHK_CUTSMSG, opt.PSMTruncate);
+			SetDlgItemInt(hwndDlg, IDC_ED_SMSGLEN, opt.PSMLen, FALSE);
+
+			// Templates
+			CheckDlgButton(hwndDlg, IDC_CHK_NEWSMSG, templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_CHK_SMSGREMOVE, templates.PopupSMsgFlags & NOTIFY_REMOVE ? 1 : 0);
+
+			SetDlgItemText(hwndDlg, IDC_ED_TNEWSMSG, templates.PopupNewSMsg);
+			SetDlgItemText(hwndDlg, IDC_ED_TSMSGREMOVE, templates.PopupSMsgRemove);
+
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), templates.PopupSMsgFlags & NOTIFY_REMOVE);
 
 			// Buttons
 			SendDlgItemMessage(hwndDlg, IDC_BT_VARIABLES, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show available variables"), BATF_TCHAR);
@@ -722,34 +735,14 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				UpdateListFlag = TRUE;
 				lvItem.pszText = protos[i]->tszAccountName;
 				lvItem.lParam = (LPARAM)protos[i]->szModuleName;
-				PROTOTEMPLATE *prototemplate = (PROTOTEMPLATE *)mir_alloc(sizeof(PROTOTEMPLATE));
-				prototemplate->ProtoName = protos[i]->tszAccountName;
-				TCHAR protoname[MAX_PATH] = {0};
-				mir_sntprintf(protoname, SIZEOF(protoname), _T("%s_TSMChange"), protos[i]->tszAccountName);
-				char *szprotoname = mir_t2a(protoname);
-				DBVARIANT dbVar = {0};
-				db_get_ts(NULL, MODULE, szprotoname, &dbVar);
-				if (lstrcmp(dbVar.ptszVal, NULL) == 0) {
-					db_free(&dbVar);
-					_tcsncpy(prototemplate->ProtoTemplate, TranslateT(DEFAULT_POPUP_STATUSMESSAGE), SIZEOF(prototemplate->ProtoTemplate));
-				}
-				else
-					_tcsncpy(prototemplate->ProtoTemplate, dbVar.ptszVal, SIZEOF(prototemplate->ProtoTemplate));
-
-				mir_free(szprotoname);
 				ListView_InsertItem(hList, &lvItem);
-				ProtoTemplates.insert(prototemplate, ProtoTemplates.getCount());
 
 				char dbSetting[128];
 				mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", protos[i]->szModuleName);
 				ListView_SetCheckState(hList, lvItem.iItem, db_get_b(NULL, MODULE, dbSetting, TRUE));
 				lvItem.iItem++;
 			}
-			if (lvItem.iItem) {
-				ListView_SetItemState(hList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-				PROTOTEMPLATE *prototemplate = ProtoTemplates[0];
-				SetDlgItemText(hwndDlg, IDC_POPUPTEXT, prototemplate->ProtoTemplate);
-			}
+
 			UpdateListFlag = FALSE;
 		}
 		return TRUE;
@@ -758,10 +751,18 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		switch (HIWORD(wParam)) {
 		case BN_CLICKED:
 			switch (LOWORD(wParam)) {
+				case IDC_CHK_CUTSMSG:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_SMSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTSMSG));
+					break;
+				case IDC_CHK_NEWSMSG:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_NEWSMSG));
+					break;
+				case IDC_CHK_SMSGREMOVE:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE));
+					break;
 				case IDC_BT_VARIABLES:
 					MessageBox(hwndDlg, VARIABLES_SM_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
 					break;
-
 				case IDC_BT_RESET:
 					if (ResetTemplatesToDefault(hwndDlg) == IDYES)
 						break;
@@ -773,7 +774,6 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 
 			break;
-
 		case EN_CHANGE:
 			if ((HWND)lParam == GetFocus())
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -787,21 +787,7 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			case LVN_ITEMCHANGED:
 				{
 					NMLISTVIEW *nmlv = (NMLISTVIEW *)lParam;
-					if (nmlv->uNewState == 3 && !UpdateListFlag) {
-						HWND hList = GetDlgItem(hwndDlg, IDC_PROTOCOLLIST);
-						PROTOTEMPLATE *prototemplate;
-						if (ListView_GetHotItem(hList) != ListView_GetSelectionMark(hList)) {
-							prototemplate = ProtoTemplates[ListView_GetSelectionMark(hList)];
-							GetDlgItemText(hwndDlg, IDC_POPUPTEXT, prototemplate->ProtoTemplate, MAX_PATH);
-							ProtoTemplates.remove(ListView_GetSelectionMark(hList));
-							ProtoTemplates.insert(prototemplate, ListView_GetSelectionMark(hList));
-						}
-
-						LastItem = ListView_GetHotItem(hList);
-						prototemplate = ProtoTemplates[LastItem];
-						SetDlgItemText(hwndDlg, IDC_POPUPTEXT, prototemplate->ProtoTemplate);
-					}
-					if ((nmlv->uNewState^nmlv->uOldState)&LVIS_STATEIMAGEMASK && !UpdateListFlag)
+					if ((nmlv->uNewState ^ nmlv->uOldState) & LVIS_STATEIMAGEMASK && !UpdateListFlag)
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				}
 				break;
@@ -809,18 +795,22 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}
 
 		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
-			opt.PopupOnConnect = IsDlgButtonChecked(hwndDlg, IDC_ONCONNECT);
+			opt.PSMOnConnect = IsDlgButtonChecked(hwndDlg, IDC_ONCONNECT);
+			opt.PSMTruncate = IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTSMSG);
+			opt.PSMLen = GetDlgItemInt(hwndDlg, IDC_ED_SMSGLEN, 0, FALSE);
+
+			templates.PopupSMsgFlags = 0;
+			templates.PopupSMsgFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CHK_NEWSMSG) ? NOTIFY_NEW_MESSAGE : 0) |
+										(IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE) ? NOTIFY_REMOVE : 0);
 
 			// Templates
-			PROTOTEMPLATE *prototemplate = ProtoTemplates[LastItem];
-			GetDlgItemText(hwndDlg, IDC_POPUPTEXT, prototemplate->ProtoTemplate, MAX_PATH);
-			ProtoTemplates.remove(LastItem);
-			ProtoTemplates.insert(prototemplate, LastItem);
+			GetDlgItemText(hwndDlg, IDC_ED_TNEWSMSG, templates.PopupNewSMsg, SIZEOF(templates.PopupNewSMsg));
+			GetDlgItemText(hwndDlg, IDC_ED_TSMSGREMOVE, templates.PopupSMsgRemove, SIZEOF(templates.PopupSMsgRemove));
 
 			// Save options to db
 			SaveOptions();
 			SaveTemplates();
-			HWND hList = GetDlgItem(hwndDlg,IDC_PROTOCOLLIST);
+			HWND hList = GetDlgItem(hwndDlg, IDC_PROTOCOLLIST);
 			LVITEM lvItem = {0};
 			lvItem.mask = LVIF_PARAM;
 			for (int i = 0; i < ListView_GetItemCount(hList); i++) {
@@ -835,10 +825,6 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}
 
 		return TRUE;
-
-	case WM_DESTROY:
-		ProtoTemplates.destroy();
-		break;
 	}
 
 	return FALSE;

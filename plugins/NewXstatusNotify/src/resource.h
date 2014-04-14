@@ -58,6 +58,8 @@
 #define IDC_INDSNDLIST                  1044
 #define IDC_LOGTODB                     1044
 #define IDC_CHECKMESSAGEWINDOW          1045
+#define IDC_ED_SMSGLEN                  1046
+#define IDC_UD_SMSGLEN                  1047
 #define IDC_HIDDENCONTACTSTOO           1052
 #define IDC_USEINDIVSOUNDS              1053
 #define IDC_OK                          1055
@@ -85,7 +87,13 @@
 #define IDC_STATUSMESSAGEICON           1082
 #define IDC_ONCONNECT                   1101
 #define IDC_PUIGNOREREMOVE              1102
+#define IDC_CHK_NEWSMSG                 1102
+#define IDC_CHK_SMSGREMOVE              1103
+#define IDC_CUTSMSG                     1104
+#define IDC_CHK_CUTSMSG                 1104
 #define IDC_POPUPTEXT                   1115
+#define IDC_ED_TNEWSMSG                 1115
+#define IDC_ED_TSMSGREMOVE              1116
 #define IDC_PROTOCOLLIST                1207
 #define IDC_LOGFILE                     2029
 #define IDC_BT_CHOOSELOGFILE            2030
@@ -146,7 +154,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1046
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

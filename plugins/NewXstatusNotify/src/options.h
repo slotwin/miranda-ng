@@ -62,9 +62,11 @@ typedef struct tagOPTIONS {
 	BYTE LTruncateMsg;
 	DWORD LMsgLen;
 	// IDD_OPT_SMPOPUP
-	BYTE PopupOnConnect;
-	BYTE IgnoreEmpty;
+	BYTE PSMOnConnect;
+	BYTE PSMTruncate;
+	DWORD PSMLen;
 	// OTHER
+	BYTE IgnoreEmpty;
 	BYTE TempDisabled;
 	BYTE PopupAutoDisabled;
 	BYTE SoundAutoDisabled;
@@ -73,11 +75,14 @@ typedef struct tagOPTIONS {
 
 typedef struct tagTEMPLATES {
 	BYTE PopupFlags;
+	BYTE PopupSMsgFlags;
 	BYTE LogFlags;
 	TCHAR PopupDelimiter[32];
 	TCHAR PopupNewXstatus[256];
 	TCHAR PopupNewMsg[256];
 	TCHAR PopupRemove[256];
+	TCHAR PopupNewSMsg[256];
+	TCHAR PopupSMsgRemove[256];
 	TCHAR LogDelimiter[32];
 	TCHAR LogNewXstatus[256];
 	TCHAR LogNewMsg[256];
@@ -85,7 +90,7 @@ typedef struct tagTEMPLATES {
 	TCHAR LogOpening[256];
 } TEMPLATES;
 
-int OptionsInitialize(WPARAM wParam, LPARAM lParam); 
-void LoadOptions(); 
+int OptionsInitialize(WPARAM wParam, LPARAM lParam);
+void LoadOptions();
 
 #endif

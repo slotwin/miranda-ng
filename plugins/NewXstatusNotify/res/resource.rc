@@ -17,8 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1252)
-
+#pragma code_page(1250)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -261,19 +260,26 @@ BEGIN
     CONTROL         "Reset",IDC_BT_RESET,"MButtonClass",WS_TABSTOP,29,180,16,14
 END
 
-IDD_OPT_SMPOPUP DIALOGEX 0, 0, 305, 226
+IDD_OPT_SMPOPUP DIALOGEX 0, 0, 305, 228
 STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "General",IDC_STATIC,7,0,289,27
-    CONTROL         "Show Popups when I connect",IDC_ONCONNECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,11,274,8
-    GROUPBOX        "Accounts",IDC_STATIC,7,41,289,124
-    CTEXT           "Enable/Disable accounts which you don't wish to be notified for:",IDC_STATIC,14,52,274,10
-    CONTROL         "",IDC_PROTOCOLLIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,51,66,201,90
-    GROUPBOX        "Text",IDC_STATIC,7,170,289,38
-    EDITTEXT        IDC_POPUPTEXT,14,182,222,20,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
-    CONTROL         "Variables",IDC_BT_VARIABLES,"MButtonClass",WS_TABSTOP,241,185,16,14
-    CONTROL         "Reset",IDC_BT_RESET,"MButtonClass",WS_TABSTOP,262,185,16,14
+    GROUPBOX        "General",IDC_STATIC,3,3,299,35
+    CONTROL         "Show Popups when I connect",IDC_ONCONNECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,13,285,8
+    GROUPBOX        "Accounts",IDC_STATIC,3,40,299,116
+    CTEXT           "Enable/Disable accounts which you don't wish to be notified for:",IDC_STATIC,10,50,285,10
+    CONTROL         "",IDC_PROTOCOLLIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,51,60,201,90
+    GROUPBOX        "Notify when:",IDC_STATIC,3,158,299,67
+    EDITTEXT        IDC_ED_TNEWSMSG,86,168,209,12,ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    CONTROL         "Variables",IDC_BT_VARIABLES,"MButtonClass",WS_TABSTOP,10,204,16,14
+    CONTROL         "Reset",IDC_BT_RESET,"MButtonClass",WS_TABSTOP,31,204,16,14
+    CONTROL         "New message:",IDC_CHK_NEWSMSG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,170,71,8
+    CONTROL         "Remove:",IDC_CHK_SMSGREMOVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,187,71,8
+    EDITTEXT        IDC_ED_TSMSGREMOVE,86,185,209,12,ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    CONTROL         "Truncate message length to:",IDC_CHK_CUTSMSG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,25,131,8
+    EDITTEXT        IDC_ED_SMSGLEN,152,23,34,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_UD_SMSGLEN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,174,20,11,14
+    LTEXT           "characters",IDC_STATIC,191,25,104,8
 END
 
 
@@ -319,6 +325,31 @@ BEGIN
     "\0"
 END
 
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_OPT_XPOPUP, DIALOG
+    BEGIN
+    END
+
+    IDD_OPT_SMPOPUP, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 302
+        VERTGUIDE, 10
+        VERTGUIDE, 295
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 225
+    END
+END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // Neutral resources

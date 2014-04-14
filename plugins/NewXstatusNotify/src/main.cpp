@@ -718,7 +718,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 		if (opt.IgnoreEmpty && (smi.compare == COMPARE_DEL))
 			retempty = FALSE;
-		else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PopupOnConnect)
+		else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PSMOnConnect)
 			rettime = FALSE;
 
 		char status[8];
@@ -728,16 +728,16 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 			DBVARIANT dbVar = {0};
 
 			if (smi.compare == COMPARE_DEL) {
-				if (!db_get_ts(NULL, MODULE, "TPopupSMRemove", &dbVar))
+				if (!db_get_ts(NULL, MODULE, "TPopupSMsgRemoval", &dbVar))
 					str = GetStr(&smi, dbVar.ptszVal);
 				else
-					str = GetStr(&smi, TranslateT(DEFAULT_POPUP_SMREMOVE));
+					str = GetStr(&smi, DEFAULT_POPUP_SMSGREMOVE);
 			}
 			else {
-				if (!db_get_ts(NULL, MODULE, "TPopupSMChange", &dbVar))
+				if (!db_get_ts(NULL, MODULE, "TPopupNewSMsg", &dbVar))
 					str = GetStr(&smi, dbVar.ptszVal);
 				else
-					str = GetStr(&smi, TranslateT(DEFAULT_POPUP_SMCHANGE));
+					str = GetStr(&smi, DEFAULT_POPUP_NEWSMSG);
 			}
 			db_free(&dbVar);
 
