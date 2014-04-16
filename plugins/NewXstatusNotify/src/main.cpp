@@ -531,11 +531,7 @@ void PlayChangeSound(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 {
 	bool bEnablePopup = true, bEnableSound = true;
-
 	char *szProto = GetContactProto(hContact);
-	if (szProto == NULL || opt.TempDisabled)
-		return 0;
-
 	WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 
 	if (!strcmp(szProto, META_PROTO)) { //this contact is Meta
@@ -555,13 +551,13 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		}
 		else db_set_s(hContact, szProto, "LastOnline", szSubProto);
 
-		if (!db_get_b(0, MODULE, szSubProto, 1))
+		if (db_get_b(0, MODULE, szSubProto, 1) == 0)
 			return 0;
 
 		szProto = szSubProto;
 	}
 	else {
-		if (myStatus == ID_STATUS_OFFLINE || !db_get_b(0, MODULE, szProto, 1)) 
+		if (myStatus == ID_STATUS_OFFLINE || db_get_b(0, MODULE, szProto, 1) == 0)
 			return 0;
 	}
 
@@ -575,10 +571,6 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 	if (SkipHiddenContact(hContact))
 		return 0;
 
-	// we don't want to be notified if new chatroom comes online
-	if (db_get_b(hContact, szProto, "ChatRoom", 0) == 1)
-		return 0;
-
 	// check if that proto from which we received statuschange notification, isn't in autodisable list
 	if (opt.AutoDisable) {
 		char statusIDs[12], statusIDp[12];
@@ -588,13 +580,13 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : TRUE;
 	}
 
-	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1))
+	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
 		ShowStatusChangePopup(hContact, szProto, oldStatus, newStatus);
 
-	if (opt.BlinkIcon)
+	if (opt.BlinkIcon && !opt.TempDisabled)
 		BlinkIcon(hContact, szProto, newStatus);
 
-	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1))
+	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled)
 		PlayChangeSound(hContact, oldStatus, newStatus);
 
 	if (opt.LogToDB && (!opt.CheckMessageWindow || CheckMsgWnd(hContact))) {
@@ -639,6 +631,10 @@ int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	if (strcmp(cws->szModule, szProto))
 		return 0;
 
+	// we don't want to be notified if new chatroom comes online
+	if (db_get_b(hContact, szProto, "ChatRoom", 0) == 1)
+		return 0;
+
 	WORD oldStatus = DBGetContactSettingRangedWord(hContact, "UserOnline", "OldStatus", ID_STATUS_OFFLINE, ID_STATUS_MIN, ID_STATUS_MAX);
 	if (oldStatus == newStatus)
 		return 0;
@@ -672,17 +668,20 @@ int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 {
-	if (SkipHiddenContact(hContact))
-		return 0;
-
+	STATUSMSGINFO smi;
+	bool bEnablePopup = true, bEnableSound = true;
 	char *szProto = GetContactProto(hContact);
-	if (szProto == NULL)
+	if (strcmp(cws->szModule, szProto))
 		return 0;
 
-	char dbSetting[128];
-	mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", szProto);
-	if (!db_get_b(NULL, MODULE, dbSetting, 1))
-		return 0;
+	smi.compare = CompareStatusMsg(&smi, cws);
+	if (smi.compare == COMPARE_SAME)
+		goto skip_notify;
+
+	if (cws->value.type == DBVT_DELETED)
+		db_unset(smi.hContact, "UserOnline", "OldStatusMsg");
+	else
+		db_set(smi.hContact, "UserOnline", "OldStatusMsg", &cws->value);
 
 	//don't show popup when mradio connecting and disconnecting
 	if (_stricmp(szProto, "mRadio") == 0 && !cws->value.type == DBVT_DELETED) {
@@ -694,50 +693,63 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		mir_sntprintf(buf, SIZEOF(buf), _T(" (%s)"), TranslateT("playing"));
 		ptrA pszUtf3(mir_utf8encodeT(buf));
 		if (_stricmp(cws->value.pszVal, pszUtf) == 0 || _stricmp(cws->value.pszVal, pszUtf2) == 0 || _stricmp(cws->value.pszVal, pszUtf3) == 0)
-			return 0;
+			goto skip_notify;
 	}
 
-	if (szProto != NULL && CallProtoService(szProto, PS_GETSTATUS, 0, 0) != ID_STATUS_OFFLINE) {
-		STATUSMSGINFO smi;
-		BOOL rettime = TRUE;
+	// check per-contact ignored events
+
+	// we're offline or just connecting
+	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE || (db_get_b(0, MODULE, smi.proto, 1) == 0 && !opt.PSMOnConnect))
+		goto skip_notify;
+
+	char dbSetting[128];
+	mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", szProto);
+	// this proto is not set for status message notifications
+	if (db_get_b(NULL, MODULE, dbSetting, 1) == 0)
+		goto skip_notify;
+	mir_snprintf(dbSetting, SIZEOF(dbSetting), "%d", IDC_CHK_STATUS_MESSAGE);
+	// status message change notifications are disabled
+	if (db_get_b(NULL, MODULE, dbSetting, 1) == 0)
+		goto skip_notify;
+
+	if (SkipHiddenContact(hContact))
+		goto skip_notify;
+
+	// check if our status isn't on autodisable list
+	if (opt.AutoDisable) {
+		char statusIDs[12], statusIDp[12];
+		WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+		mir_snprintf(statusIDs, SIZEOF(statusIDs), "s%d", myStatus);
+		mir_snprintf(statusIDp, SIZEOF(statusIDp), "p%d", myStatus);
+		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : TRUE;
+		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : TRUE;
+	}
+
+	// check flags
+	if ((!(templates.PopupSMsgFlags & NOTIFY_REMOVE) && (smi.compare == COMPARE_DEL))
+		|| (!(templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE) && (smi.compare == COMPARE_DIFF)))
+		bEnablePopup = false;
+
+	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled) {
 		smi.proto = szProto;
 		smi.hContact = hContact;
-		smi.compare = CompareStatusMsg(&smi, cws);
-		if ((smi.compare == COMPARE_SAME) || (!(templates.PopupSMsgFlags & NOTIFY_REMOVE) && (smi.compare == COMPARE_DEL))) {
-			mir_free(smi.newstatusmsg);
-			mir_free(smi.oldstatusmsg);
-			return 1;
-		}
-
-		if (cws->value.type == DBVT_DELETED)
-			db_unset(smi.hContact, "UserOnline", "OldStatusMsg");
-		else
-			db_set(smi.hContact, "UserOnline", "OldStatusMsg", &cws->value);
-
 		smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
 
-		if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PSMOnConnect)
-			rettime = FALSE;
+		TCHAR *str;
+		if (smi.compare == COMPARE_DEL)
+			str = GetStr(&smi, templates.PopupSMsgRemove);
+		else
+			str = GetStr(&smi, templates.PopupNewSMsg);
 
-		char status[8];
-		mir_snprintf(status, SIZEOF(status), "%d", IDC_CHK_STATUS_MESSAGE);
-		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && !opt.TempDisabled && rettime) {
-			TCHAR *str;
+		ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
 
-			if (smi.compare == COMPARE_DEL)
-				str = GetStr(&smi, templates.PopupSMsgRemove);
-			else
-				str = GetStr(&smi, templates.PopupNewSMsg);
-
-			ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
-
-			mir_free(str);
-		}
-		mir_free(smi.newstatusmsg);
-		mir_free(smi.oldstatusmsg);
-		return 1;
+		mir_free(str);
 	}
-	return 0;
+
+skip_notify:
+	mir_free(smi.newstatusmsg);
+	mir_free(smi.oldstatusmsg);
+	return 1;
 }
 
 int ContactSettingChanged(WPARAM hContact, LPARAM lParam)
