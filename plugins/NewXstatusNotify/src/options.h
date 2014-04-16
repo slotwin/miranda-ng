@@ -47,6 +47,7 @@ typedef struct tagOPTIONS {
 	BYTE UseIndSnd;
 	BYTE BlinkIcon;
 	BYTE BlinkIcon_Status;
+	BYTE BlinkIcon_ForMsgs;
 	BYTE Log;
 	BYTE LogToDB, CheckMessageWindow;
 	TCHAR LogFilePath[MAX_PATH];

@@ -481,35 +481,26 @@ void ShowStatusChangePopup(MCONTACT hContact, char *szProto, WORD oldStatus, WOR
 	PUAddPopupT(&ppd);
 }
 
-void BlinkIcon(MCONTACT hContact, char* szProto, WORD status)
+void BlinkIcon(MCONTACT hContact, char *szProto, WORD status, TCHAR *stzText)
 {
 	CLISTEVENT cle = {0};
-	TCHAR stzTooltip[256];
-
 	cle.cbSize = sizeof(cle);
 	cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
 	cle.hContact = hContact;
 	cle.hDbEvent = (HANDLE)hContact;
 	cle.hIcon = (opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, status) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE));
 	cle.pszService = "UserOnline/Description";
-	cle.ptszTooltip = stzTooltip;
-
-	mir_sntprintf(stzTooltip, SIZEOF(stzTooltip), TranslateT("%s is now %s"),
-		CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(status)].lpzStandardText);
+	cle.ptszTooltip = stzText;
 	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
 }
 
-void PlayChangeSound(MCONTACT hContact, WORD oldStatus, WORD newStatus)
+void PlayChangeSound(MCONTACT hContact, const char *name)
 {
-	DBVARIANT dbv;
 	if (opt.UseIndSnd) {
+		DBVARIANT dbv;
 		TCHAR stzSoundFile[MAX_PATH] = {0};
-		if (!db_get_ts(hContact, MODULE, "UserFromOffline", &dbv) && oldStatus == ID_STATUS_OFFLINE) {
+		if (!db_get_ts(hContact, MODULE, name, &dbv)) {
 			_tcscpy(stzSoundFile, dbv.ptszVal);
-			db_free(&dbv);
-		}
-		else if (!db_get_ts(hContact, MODULE, StatusList[Index(newStatus)].lpzSkinSoundName, &dbv)) {
-			lstrcpy(stzSoundFile, dbv.ptszVal);
 			db_free(&dbv);
 		}
 
@@ -522,10 +513,8 @@ void PlayChangeSound(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		}
 	}
 
-	if (!db_get_b(0, "SkinSoundsOff", "UserFromOffline", 0) && oldStatus == ID_STATUS_OFFLINE)
-		SkinPlaySound("UserFromOffline");
-	else if (!db_get_b(0, "SkinSoundsOff", StatusList[Index(newStatus)].lpzSkinSoundName, 0))
-		SkinPlaySound(StatusList[Index(newStatus)].lpzSkinSoundName);
+	if (db_get_b(0, "SkinSoundsOff", name, 0) == 0)
+		SkinPlaySound(name);
 }
 
 int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
@@ -583,11 +572,20 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
 		ShowStatusChangePopup(hContact, szProto, oldStatus, newStatus);
 
-	if (opt.BlinkIcon && !opt.TempDisabled)
-		BlinkIcon(hContact, szProto, newStatus);
+	if (opt.BlinkIcon && !opt.TempDisabled) {
+		TCHAR *str;
+		mir_sntprintf(str, SIZEOF(str), TranslateT("%s is now %s"),
+			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText);
+		BlinkIcon(hContact, szProto, newStatus, str);
+		mir_free(str);
+	}
 
-	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled)
-		PlayChangeSound(hContact, oldStatus, newStatus);
+	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
+		if (oldStatus == ID_STATUS_OFFLINE)
+			PlayChangeSound(hContact, "UserFromOffline");
+		else
+			PlayChangeSound(hContact, StatusList[Index(newStatus)].lpzSkinSoundName);
+	}
 
 	if (opt.LogToDB && (!opt.CheckMessageWindow || CheckMsgWnd(hContact))) {
 		TCHAR stzStatusText[MAX_SECONDLINE] = {0};
@@ -744,6 +742,21 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
 
 		mir_free(str);
+	}
+
+	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled) {
+		TCHAR *str;
+		mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed status message to %s"),
+			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), smi.newstatusmsg);
+		BlinkIcon(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), str);
+		mir_free(str);
+	}
+
+	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
+		if (smi.compare == COMPARE_DEL)
+			PlayChangeSound(hContact, SMSG_SOUND_REMOVED);
+		else
+			PlayChangeSound(hContact, SMSG_SOUND_MSGCHANGED);
 	}
 
 skip_notify:
@@ -1074,6 +1087,8 @@ void InitSound()
 	SkinAddNewSoundExT(XSTATUS_SOUND_CHANGED, LPGENT("Status Notify"), LPGENT("Extra status changed"));
 	SkinAddNewSoundExT(XSTATUS_SOUND_MSGCHANGED, LPGENT("Status Notify"), LPGENT("Extra status message changed"));
 	SkinAddNewSoundExT(XSTATUS_SOUND_REMOVED, LPGENT("Status Notify"), LPGENT("Extra status removed"));
+	SkinAddNewSoundExT(SMSG_SOUND_MSGCHANGED, LPGENT("Status Notify"), LPGENT("Status message changed"));
+	SkinAddNewSoundExT(SMSG_SOUND_REMOVED, LPGENT("Status Notify"), LPGENT("Status message removed"));
 }
 
 int InitTopToolbar(WPARAM, LPARAM)

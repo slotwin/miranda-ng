@@ -72,6 +72,7 @@ void LoadOptions()
 	opt.UseIndSnd			= db_get_b(0, MODULE, "UseIndSounds", 1);
 	opt.BlinkIcon			= db_get_b(0, MODULE, "BlinkIcon", 0);
 	opt.BlinkIcon_Status	= db_get_b(0, MODULE, "BlinkIcon_Status", 0);
+	opt.BlinkIcon_ForMsgs	= db_get_b(0, MODULE, "BlinkIcon_ForMsgs", 0);
 	opt.Log					= db_get_b(0, MODULE, "Log", 0);
 	opt.LogToDB				= db_get_b(0, MODULE, "LogToDB", 0);
 	opt.CheckMessageWindow	= db_get_b(0, MODULE, "CheckMessageWindow", 1);
@@ -140,6 +141,7 @@ void SaveOptions()
 	db_set_b(0, MODULE, "UseIndSounds", opt.UseIndSnd);
 	db_set_b(0, MODULE, "BlinkIcon", opt.BlinkIcon);
 	db_set_b(0, MODULE, "BlinkIcon_Status", opt.BlinkIcon_Status);
+	db_set_b(0, MODULE, "BlinkIcon_ForMsgs", opt.BlinkIcon_ForMsgs);
 	db_set_b(0, MODULE, "Log", opt.Log);
 	db_set_b(0, MODULE, "LogToDB", opt.LogToDB);
 	db_set_b(0, MODULE, "CheckMessageWindow", opt.CheckMessageWindow);
