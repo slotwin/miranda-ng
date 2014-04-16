@@ -33,15 +33,13 @@ void PreviewSound(HWND hList)
 	int hlpStatus = lvi.lParam;
 	
 	ListView_GetItemText(hList, lvi.iItem, 1, buff, SIZEOF(buff));
-	if (_tcscmp(buff, TranslateT(DEFAULT_SOUND)) == 0)
-	{
-		if (hlpStatus == ID_STATUS_FROMOFFLINE) 
+	if (_tcscmp(buff, TranslateT(DEFAULT_SOUND)) == 0) {
+		if (hlpStatus == ID_STATUS_FROMOFFLINE)
 			SkinPlaySound("UserFromOffline");
-		else 
+		else
 			SkinPlaySound(StatusList[Index(hlpStatus)].lpzSkinSoundName);
 	}
-	else 
-	{ 
+	else {
 		PathToAbsoluteT(buff, stzSoundPath);
 		SkinPlaySoundFile(stzSoundPath);
 	}
@@ -50,8 +48,7 @@ void PreviewSound(HWND hList)
 BOOL RemoveSoundFromList(HWND hList)
 {
 	int iSel = ListView_GetSelectionMark(hList);
-	if (iSel != -1)
-	{
+	if (iSel != -1) {
 		iSel = -1;
 		while ((iSel = ListView_GetNextItem(hList, iSel, LVNI_SELECTED)) != -1)
 			ListView_SetItemText(hList, iSel, 1, TranslateT(DEFAULT_SOUND));
@@ -61,7 +58,7 @@ BOOL RemoveSoundFromList(HWND hList)
 	return FALSE;
 }
 
-TCHAR *SelectSound(HWND hwndDlg, TCHAR *buff) 
+TCHAR *SelectSound(HWND hwndDlg, TCHAR *buff)
 {
 	OPENFILENAME ofn = {0};
 
@@ -88,14 +85,12 @@ TCHAR *SelectSound(HWND hwndDlg, TCHAR *buff)
 	return NULL;
 }
 
-HIMAGELIST GetStatusIconsImgList(char *szProto) 
+HIMAGELIST GetStatusIconsImgList(char *szProto)
 {
 	HIMAGELIST hList = NULL;
-	if (szProto)
-	{
+	if (szProto) {
 		hList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, STATUS_COUNT, 0);
-		if (hList != NULL) 
-		{
+		if (hList != NULL) {
 			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++)
 				ImageList_AddIcon(hList, LoadSkinnedProtoIcon(szProto, StatusList[Index(i)].ID));
 			ImageList_AddIcon(hList, LoadSkinnedIcon(SKINICON_OTHER_USERONLINE));
@@ -105,7 +100,7 @@ HIMAGELIST GetStatusIconsImgList(char *szProto)
 	return hList;
 }
 
-INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
+INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static MCONTACT hContact = NULL;
 	HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
@@ -120,17 +115,17 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			ListView_SetImageList(hList, GetStatusIconsImgList(szProto), LVSIL_SMALL);
 			ListView_SetExtendedListViewStyleEx(hList, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
-			RECT rc = { 0 };
+			RECT rc = {0};
 			GetClientRect(hList, &rc);
 
-			LV_COLUMN lvc = { 0 };
+			LV_COLUMN lvc = {0};
 			lvc.mask = LVCF_WIDTH | LVCF_TEXT;
 			lvc.cx = STATUS_COLUMN;
 			lvc.pszText = TranslateT("Status");
 			ListView_InsertColumn(hList, 0, &lvc);
 
 			lvc.cx = rc.right - STATUS_COLUMN - GetSystemMetrics(SM_CXVSCROLL);
-			lvc.pszText = TranslateT("Sound for the status");
+			lvc.pszText = TranslateT("Sound file");
 			ListView_InsertColumn(hList, 1, &lvc);
 
 			if (szProto) {
@@ -163,7 +158,7 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 				}
 
-				LV_ITEM lvi = { 0 };
+				LV_ITEM lvi = {0};
 				lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
 				lvi.iItem = 0;
 				lvi.iSubItem = 0;
@@ -176,7 +171,8 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					_tcscpy(buff, dbv.ptszVal);
 					db_free(&dbv);
 				}
-				else _tcscpy(buff, TranslateT(DEFAULT_SOUND));
+				else
+					_tcscpy(buff, TranslateT(DEFAULT_SOUND));
 
 				ListView_SetItemText(hList, lvi.iItem, 1, buff);
 			}
@@ -198,7 +194,6 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if (ListView_GetSelectionMark(hList) != -1)
 				PreviewSound(hList);
 			break;
-
 		case IDC_CHANGE:
 			{
 				int iSel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_INDSNDLIST), -1, LVNI_SELECTED);
@@ -219,11 +214,9 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if (RemoveSoundFromList(GetDlgItem(hwndDlg, IDC_INDSNDLIST)))
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
-
 		case IDC_CHECK_NOTIFYSOUNDS:
 			db_set_b(hContact, MODULE, "EnableSounds", IsDlgButtonChecked(hwndDlg, IDC_CHECK_NOTIFYSOUNDS) ? 1 : 0);
 			break;
-
 		case IDC_CHECK_NOTIFYPOPUPS:
 			db_set_b(hContact, MODULE, "EnablePopups", IsDlgButtonChecked(hwndDlg, IDC_CHECK_NOTIFYPOPUPS) ? 1 : 0);
 			break;
@@ -235,7 +228,7 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TCHAR buff[MAX_PATH];
 			HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
 
-			LVITEM lvi = { 0 };
+			LVITEM lvi = {0};
 			lvi.mask = LVIF_PARAM;
 			//Cycle through the list reading the text associated to each status.
 			for (lvi.iItem = ListView_GetItemCount(hList) - 1; lvi.iItem >= 0; lvi.iItem--) {
@@ -249,7 +242,7 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						db_unset(hContact, MODULE, StatusList[Index(lvi.lParam)].lpzSkinSoundName);
 				}
 				else {
-					TCHAR stzSoundPath[MAX_PATH] = { 0 };
+					TCHAR stzSoundPath[MAX_PATH] = {0};
 					PathToRelativeT(buff, stzSoundPath);
 					if (lvi.lParam == ID_STATUS_FROMOFFLINE)
 						db_set_ws(hContact, MODULE, "UserFromOffline", stzSoundPath);
@@ -289,7 +282,7 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-void ResetListOptions(HWND hwndList) 
+void ResetListOptions(HWND hwndList)
 {
 	SendMessage(hwndList, CLM_SETBKBITMAP, 0, 0);
 	SendMessage(hwndList, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
@@ -327,7 +320,8 @@ void SetAllContactsIcons(HWND hwndList)
 				EnableXStatus = db_get_b(hContact, MODULE, "EnableXStatusNotify", 1);
 				EnableLogging = db_get_b(hContact, MODULE, "EnableLogging", 1);
 			}
-			else EnableSounds = EnablePopups = EnableXStatus = EnableLogging = 0;
+			else
+				EnableSounds = EnablePopups = EnableXStatus = EnableLogging = 0;
 
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_SOUND, EnableSounds ? EXTRA_IMAGE_SOUND : EXTRA_IMAGE_DOT);
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_POPUP, EnablePopups? EXTRA_IMAGE_POPUP : EXTRA_IMAGE_DOT);
@@ -341,25 +335,23 @@ void SetAllContactsIcons(HWND hwndList)
 
 void SetGroupsIcons(HWND hwndList, HANDLE hFirstItem, HANDLE hParentItem, int *groupChildCount)
 {
-	int iconOn[6] = {1,1,1,1,1,1};
+	int iconOn[6] = { 1, 1, 1, 1, 1, 1 };
 	int childCount[6] = {0};
 	HANDLE hItem;
 
 	int typeOfFirst = SendMessage(hwndList, CLM_GETITEMTYPE, (WPARAM)hFirstItem, 0);
-	if (typeOfFirst == CLCIT_GROUP) 
+	if (typeOfFirst == CLCIT_GROUP)
 		hItem = hFirstItem;
 	else 
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTGROUP, (LPARAM)hFirstItem);
 
-	while (hItem) 
-	{
+	while (hItem) {
 		HANDLE hChildItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
-		if (hChildItem) 
+		if (hChildItem)
 			SetGroupsIcons(hwndList, hChildItem, hItem, childCount);
 
-		for (int i = 0; i < SIZEOF(iconOn); i++)
-		{
-			if (iconOn[i] && GetExtraImage(hwndList, hItem, i) == EXTRA_IMAGE_DOT) 
+		for (int i = 0; i < SIZEOF(iconOn); i++) {
+			if (iconOn[i] && GetExtraImage(hwndList, hItem, i) == EXTRA_IMAGE_DOT)
 				iconOn[i] = 0;
 		}
 
@@ -367,20 +359,18 @@ void SetGroupsIcons(HWND hwndList, HANDLE hFirstItem, HANDLE hParentItem, int *g
 	}
 
 	//check contacts
-	if (typeOfFirst == CLCIT_CONTACT) 
+	if (typeOfFirst == CLCIT_CONTACT)
 		hItem = hFirstItem;
 	else 
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTCONTACT, (LPARAM)hFirstItem);
 
-	while(hItem) 
-	{
-		for (int i = 0; i < SIZEOF(iconOn); i++) 
-		{
+	while (hItem) {
+		for (int i = 0; i < SIZEOF(iconOn); i++) {
 			int image = GetExtraImage(hwndList, hItem, i);
-			if (iconOn[i] && image == EXTRA_IMAGE_DOT) 
+			if (iconOn[i] && image == EXTRA_IMAGE_DOT)
 				iconOn[i] = 0;
 
-			if (image != EMPTY_EXTRA_ICON) 
+			if (image != EMPTY_EXTRA_ICON)
 				childCount[i]++;
 		}
 
@@ -388,10 +378,9 @@ void SetGroupsIcons(HWND hwndList, HANDLE hFirstItem, HANDLE hParentItem, int *g
 	}
 
 	//set icons
-	for(int i = 0; i < SIZEOF(iconOn); i++) 
-	{
+	for (int i = 0; i < SIZEOF(iconOn); i++) {
 		SetExtraImage(hwndList, hParentItem, i, childCount[i] ? (iconOn[i] ? i : EXTRA_IMAGE_DOT) : EMPTY_EXTRA_ICON);
-		if (groupChildCount) 
+		if (groupChildCount)
 			groupChildCount[i] += childCount[i];
 	}
 }
@@ -401,40 +390,38 @@ void SetAllChildrenIcons(HWND hwndList, HANDLE hFirstItem, int column, int image
 	HANDLE hItem, hChildItem;
 
 	int typeOfFirst = SendMessage(hwndList, CLM_GETITEMTYPE, (WPARAM)hFirstItem, 0);
-	if (typeOfFirst == CLCIT_GROUP) 
+	if (typeOfFirst == CLCIT_GROUP)
 		hItem = hFirstItem;
-	else 
+	else
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTGROUP, (LPARAM)hFirstItem);
 
-	while(hItem) 
-	{
-		hChildItem = (HANDLE)SendMessage(hwndList ,CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
-		if (hChildItem) 
+	while (hItem) {
+		hChildItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+		if (hChildItem)
 			SetAllChildrenIcons(hwndList, hChildItem, column, image);
 
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTGROUP, (LPARAM)hItem);
 	}
 
-	if (typeOfFirst == CLCIT_CONTACT) 
+	if (typeOfFirst == CLCIT_CONTACT)
 		hItem = hFirstItem;
-	else 
+	else
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTCONTACT, (LPARAM)hFirstItem);
 
-	while(hItem) 
-	{
+	while (hItem) {
 		int oldIcon = GetExtraImage(hwndList, hItem, column);
-		if (oldIcon != EMPTY_EXTRA_ICON && oldIcon != image) 
+		if (oldIcon != EMPTY_EXTRA_ICON && oldIcon != image)
 			SetExtraImage(hwndList, hItem, column, image);
 
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTCONTACT, (LPARAM)hItem);
 	}
 }
 
-INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
+INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HANDLE hItemAll;
 	switch (msg) {
-	case WM_INITDIALOG: 
+	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
 
@@ -476,7 +463,7 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_NOTIFY:
 		{
 			HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
-			switch(((LPNMHDR)lParam)->idFrom) {
+			switch (((LPNMHDR)lParam)->idFrom) {
 			case IDC_INDSNDLIST:
 				switch (((LPNMHDR)lParam)->code) {
 				case CLN_NEWCONTACT:
@@ -489,59 +476,59 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case CLN_OPTIONSCHANGED:
 					ResetListOptions(hList);
 					break;
-				case NM_CLICK: 
+				case NM_CLICK:
 					{
 						NMCLISTCONTROL *nm = (NMCLISTCONTROL*)lParam;
 						DWORD hitFlags;
 
 						// Make sure we have an extra column
-						if (nm->iColumn == -1) break;
+						if (nm->iColumn == -1)
+							break;
 
 						// Find clicked item
 						HANDLE hItem = (HANDLE)SendMessage(hList, CLM_HITTEST, (WPARAM)&hitFlags, MAKELPARAM(nm->pt.x, nm->pt.y));
-						if (hItem == NULL) break;
-						if (!(hitFlags & CLCHT_ONITEMEXTRA)) break;
+						if (hItem == NULL)
+							break;
+						if (!(hitFlags & CLCHT_ONITEMEXTRA))
+							break;
 
 						int itemType = SendMessage(hList, CLM_GETITEMTYPE, (WPARAM)hItem, 0);
 
 						// Get image in clicked column 
 						int image = GetExtraImage(hList, hItem, nm->iColumn);
-						if (image == EXTRA_IMAGE_DOT) 
+						if (image == EXTRA_IMAGE_DOT)
 							image = nm->iColumn;
-						else if (image >= EXTRA_IMAGE_SOUND && image <= EXTRA_IMAGE_LOGGING) 
+						else if (image >= EXTRA_IMAGE_SOUND && image <= EXTRA_IMAGE_LOGGING)
 							image = EXTRA_IMAGE_DOT;
 
 						// Get item type (contact, group, etc...)
-						if (itemType == CLCIT_CONTACT)
-						{
-							if (image == EXTRA_IMAGE_DISABLEALL)
-							{
-								for (int i = 0; i < 4; i++) 
+						if (itemType == CLCIT_CONTACT) {
+							if (image == EXTRA_IMAGE_DISABLEALL) {
+								for (int i = 0; i < 4; i++)
 									SetExtraImage(hList, hItem, i, EXTRA_IMAGE_DOT);
 							}
-							else if (image == EXTRA_IMAGE_ENABLEALL)
-							{
-								for (int i = 0; i < 4; i++) 
+							else if (image == EXTRA_IMAGE_ENABLEALL) {
+								for (int i = 0; i < 4; i++)
 									SetExtraImage(hList, hItem, i, i);
 							}
-							else SetExtraImage(hList, hItem, nm->iColumn, image);
+							else
+								SetExtraImage(hList, hItem, nm->iColumn, image);
 						}
 						else if (itemType == CLCIT_INFO || itemType == CLCIT_GROUP) {
 							if (itemType == CLCIT_GROUP)
 								hItem = (HANDLE)SendMessage(hList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
 
 							if (hItem) {
-								if (image == EXTRA_IMAGE_DISABLEALL)
-								{
+								if (image == EXTRA_IMAGE_DISABLEALL) {
 									for (int i = 0; i < 4; i++)
 										SetAllChildrenIcons(hList, hItem, i, EXTRA_IMAGE_DOT);
 								}
-								else if (image == EXTRA_IMAGE_ENABLEALL)
-								{
+								else if (image == EXTRA_IMAGE_ENABLEALL) {
 									for (int i = 0; i < 4; i++)
 										SetAllChildrenIcons(hList, hItem, i, i);
 								}
-								else SetAllChildrenIcons(hList, hItem, nm->iColumn, image);
+								else
+									SetAllChildrenIcons(hList, hItem, nm->iColumn, image);
 							}
 						}
 
@@ -555,26 +542,26 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				break;
 			case 0:
 				switch (((LPNMHDR)lParam)->code) {
-				case PSN_APPLY: 
+				case PSN_APPLY:
 					for (MCONTACT hContact = db_find_first(); hContact; hContact = db_find_next(hContact)) {
 						HANDLE hItem = (HANDLE)SendMessage(hList, CLM_FINDCONTACT, hContact, 0);
 						if (hItem) {
-							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_SOUND) == EXTRA_IMAGE_SOUND) 
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_SOUND) == EXTRA_IMAGE_SOUND)
 								db_unset(hContact, MODULE, "EnableSounds");
-							else 
+							else
 								db_set_b(hContact, MODULE, "EnableSounds", 0);
 
-							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_POPUP) == EXTRA_IMAGE_POPUP) 
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_POPUP) == EXTRA_IMAGE_POPUP)
 								db_unset(hContact, MODULE, "EnablePopups");
-							else 
+							else
 								db_set_b(hContact, MODULE, "EnablePopups", 0);
 
-							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_XSTATUS) == EXTRA_IMAGE_XSTATUS) 
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_XSTATUS) == EXTRA_IMAGE_XSTATUS)
 								db_unset(hContact, MODULE, "EnableXStatusNotify");
 							else
 								db_set_b(hContact, MODULE, "EnableXStatusNotify", 0);
 
-							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_LOGGING) == EXTRA_IMAGE_LOGGING) 
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_LOGGING) == EXTRA_IMAGE_LOGGING)
 								db_unset(hContact, MODULE, "EnableLogging");
 							else
 								db_set_b(hContact, MODULE, "EnableLogging", 0);
@@ -586,7 +573,7 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		break;
 
-	case WM_DESTROY: 
+	case WM_DESTROY:
 		HIMAGELIST hImageList = (HIMAGELIST)SendMessage(GetDlgItem(hwndDlg, IDC_INDSNDLIST), CLM_GETEXTRAIMAGELIST, 0, 0);
 		for (int i = 0; i < ImageList_GetImageCount(hImageList); i++)
 			DestroyIcon(ImageList_GetIcon(hImageList, i, ILD_NORMAL));
