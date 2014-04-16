@@ -699,11 +699,11 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 	if (szProto != NULL && CallProtoService(szProto, PS_GETSTATUS, 0, 0) != ID_STATUS_OFFLINE) {
 		STATUSMSGINFO smi;
-		BOOL retempty = TRUE, rettime = TRUE;
+		BOOL rettime = TRUE;
 		smi.proto = szProto;
 		smi.hContact = hContact;
 		smi.compare = CompareStatusMsg(&smi, cws);
-		if ((smi.compare == COMPARE_SAME) || (opt.IgnoreEmpty && (smi.compare == COMPARE_DEL))) {
+		if ((smi.compare == COMPARE_SAME) || (!(templates.PopupSMsgFlags & NOTIFY_REMOVE) && (smi.compare == COMPARE_DEL))) {
 			mir_free(smi.newstatusmsg);
 			mir_free(smi.oldstatusmsg);
 			return 1;
@@ -716,30 +716,18 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 		smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
 
-		if (opt.IgnoreEmpty && (smi.compare == COMPARE_DEL))
-			retempty = FALSE;
-		else if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PSMOnConnect)
+		if (!db_get_b(0, MODULE, smi.proto, 1) && !opt.PSMOnConnect)
 			rettime = FALSE;
 
 		char status[8];
 		mir_snprintf(status, SIZEOF(status), "%d", IDC_CHK_STATUS_MESSAGE);
-		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && retempty && rettime) {
+		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && rettime) {
 			TCHAR *str;
-			DBVARIANT dbVar = {0};
 
-			if (smi.compare == COMPARE_DEL) {
-				if (!db_get_ts(NULL, MODULE, "TPopupSMsgRemoval", &dbVar))
-					str = GetStr(&smi, dbVar.ptszVal);
-				else
-					str = GetStr(&smi, DEFAULT_POPUP_SMSGREMOVE);
-			}
-			else {
-				if (!db_get_ts(NULL, MODULE, "TPopupNewSMsg", &dbVar))
-					str = GetStr(&smi, dbVar.ptszVal);
-				else
-					str = GetStr(&smi, DEFAULT_POPUP_NEWSMSG);
-			}
-			db_free(&dbVar);
+			if (smi.compare == COMPARE_DEL)
+				str = GetStr(&smi, templates.PopupSMsgRemove);
+			else
+				str = GetStr(&smi, templates.PopupNewSMsg);
 
 			ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
 
