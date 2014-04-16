@@ -538,20 +538,6 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 
 	WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 
-	// A simple implementation of Last Seen module, please don't touch this.
-	if (opt.EnableLastSeen && newStatus == ID_STATUS_OFFLINE && oldStatus > ID_STATUS_OFFLINE) {
-		SYSTEMTIME systime;
-		GetLocalTime(&systime);
-
-		db_set_w(hContact, "SeenModule", "Year", systime.wYear);
-		db_set_w(hContact, "SeenModule", "Month", systime.wMonth);
-		db_set_w(hContact, "SeenModule", "Day", systime.wDay);
-		db_set_w(hContact, "SeenModule", "Hours", systime.wHour);
-		db_set_w(hContact, "SeenModule", "Minutes", systime.wMinute);
-		db_set_w(hContact, "SeenModule", "Seconds", systime.wSecond);
-		db_set_w(hContact, "SeenModule", "Status", oldStatus);
-	}
-
 	if (!strcmp(szProto, META_PROTO)) { //this contact is Meta
 		MCONTACT hSubContact = (MCONTACT)CallService(MS_MC_GETMOSTONLINECONTACT, hContact, 0);
 		char *szSubProto = GetContactProto(hSubContact);
@@ -660,6 +646,20 @@ int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	//If we get here, the two statuses differ, so we can proceed.
 	db_set_w(hContact, "UserOnline", "OldStatus", newStatus);
 
+	// A simple implementation of Last Seen module, please don't touch this.
+	if (opt.EnableLastSeen && newStatus == ID_STATUS_OFFLINE && oldStatus > ID_STATUS_OFFLINE) {
+		SYSTEMTIME systime;
+		GetLocalTime(&systime);
+
+		db_set_w(hContact, "SeenModule", "Year", systime.wYear);
+		db_set_w(hContact, "SeenModule", "Month", systime.wMonth);
+		db_set_w(hContact, "SeenModule", "Day", systime.wDay);
+		db_set_w(hContact, "SeenModule", "Hours", systime.wHour);
+		db_set_w(hContact, "SeenModule", "Minutes", systime.wMinute);
+		db_set_w(hContact, "SeenModule", "Seconds", systime.wSecond);
+		db_set_w(hContact, "SeenModule", "Status", oldStatus);
+	}
+
 	//If *Miranda* ignores the UserOnline event, exit!
 	if (CallService(MS_IGNORE_ISIGNORED, hContact, IGNOREEVENT_USERONLINE))
 		return 0;
@@ -721,7 +721,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 		char status[8];
 		mir_snprintf(status, SIZEOF(status), "%d", IDC_CHK_STATUS_MESSAGE);
-		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && rettime) {
+		if (db_get_b(hContact, MODULE, "EnablePopups", 1) && db_get_b(0, MODULE, status, 1) && !opt.TempDisabled && rettime) {
 			TCHAR *str;
 
 			if (smi.compare == COMPARE_DEL)
