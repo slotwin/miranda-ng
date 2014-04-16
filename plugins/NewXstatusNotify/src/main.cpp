@@ -29,6 +29,7 @@ HANDLE hStatusModeChange, hServiceMenu, hHookContactStatusChanged, hToolbarButto
 HGENMENU hEnableDisableMenu;
 
 STATUS StatusList[STATUS_COUNT];
+STATUS StatusListEx[STATUSEX_COUNT];
 HWND SecretWnd;
 int hLangpack;
 
@@ -573,7 +574,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		ShowStatusChangePopup(hContact, szProto, oldStatus, newStatus);
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
-		TCHAR *str;
+		TCHAR *str = NULL;
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s is now %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText);
 		BlinkIcon(hContact, szProto, newStatus, str);
@@ -582,7 +583,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 
 	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
 		if (oldStatus == ID_STATUS_OFFLINE)
-			PlayChangeSound(hContact, "UserFromOffline");
+			PlayChangeSound(hContact, StatusListEx[ID_STATUS_FROMOFFLINE].lpzSkinSoundName);
 		else
 			PlayChangeSound(hContact, StatusList[Index(newStatus)].lpzSkinSoundName);
 	}
@@ -745,7 +746,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	}
 
 	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled) {
-		TCHAR *str;
+		TCHAR *str = NULL;
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed status message to %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), smi.newstatusmsg);
 		BlinkIcon(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), str);
@@ -754,9 +755,9 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
 		if (smi.compare == COMPARE_DEL)
-			PlayChangeSound(hContact, SMSG_SOUND_REMOVED);
+			PlayChangeSound(hContact, StatusListEx[ID_STATUS_SMSGREMOVED].lpzSkinSoundName);
 		else
-			PlayChangeSound(hContact, SMSG_SOUND_MSGCHANGED);
+			PlayChangeSound(hContact, StatusListEx[ID_STATUS_SMSGCHANGED].lpzSkinSoundName);
 	}
 
 skip_notify:
@@ -990,6 +991,42 @@ void InitStatusList()
 	StatusList[index].ID = ID_STATUS_EXTRASTATUS;
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40081bg", COLOR_BG_AVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40081tx", COLOR_TX_DEFAULT);
+
+	//From offline
+	index = ID_STATUS_FROMOFFLINE;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "UserFromOffline", MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("User: from offline (has priority!)"), MAX_SKINSOUNDDESC);
+
+	//Status message removed
+	index = ID_STATUS_SMSGREMOVED;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgRemove", MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Status message removed"), MAX_SKINSOUNDDESC);
+
+	//Status message changed
+	index = ID_STATUS_SMSGCHANGED;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgChanged", MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Status message changed"), MAX_SKINSOUNDDESC);
+
+	//Extra status removed
+	index = ID_STATUS_XREMOVED;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_REMOVED, MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status removed"), MAX_SKINSOUNDDESC);
+
+	//Extra status message changed
+	index = ID_STATUS_XMSGCHANGED;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_MSGCHANGED, MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status message changed"), MAX_SKINSOUNDDESC);
+
+	//Extra status changed
+	index = ID_STATUS_XCHANGED;
+	StatusListEx[index].ID = index;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_CHANGED, MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status changed"), MAX_SKINSOUNDDESC);
 }
 
 VOID CALLBACK ConnectionTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
@@ -1083,12 +1120,8 @@ void InitSound()
 	for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++)
 		SkinAddNewSoundExT(StatusList[Index(i)].lpzSkinSoundName, LPGENT("Status Notify"), StatusList[Index(i)].lpzSkinSoundDesc);
 
-	SkinAddNewSoundExT("UserFromOffline", LPGENT("Status Notify"), LPGENT("User: from offline (has priority!)"));
-	SkinAddNewSoundExT(XSTATUS_SOUND_CHANGED, LPGENT("Status Notify"), LPGENT("Extra status changed"));
-	SkinAddNewSoundExT(XSTATUS_SOUND_MSGCHANGED, LPGENT("Status Notify"), LPGENT("Extra status message changed"));
-	SkinAddNewSoundExT(XSTATUS_SOUND_REMOVED, LPGENT("Status Notify"), LPGENT("Extra status removed"));
-	SkinAddNewSoundExT(SMSG_SOUND_MSGCHANGED, LPGENT("Status Notify"), LPGENT("Status message changed"));
-	SkinAddNewSoundExT(SMSG_SOUND_REMOVED, LPGENT("Status Notify"), LPGENT("Status message removed"));
+	for (int i = 0; i <= ID_STATUSEX_MAX; i++)
+		SkinAddNewSoundExT(StatusListEx[i].lpzSkinSoundName, LPGENT("Status Notify"), StatusListEx[i].lpzSkinSoundDesc);
 }
 
 int InitTopToolbar(WPARAM, LPARAM)

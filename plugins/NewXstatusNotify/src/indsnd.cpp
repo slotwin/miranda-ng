@@ -34,8 +34,8 @@ void PreviewSound(HWND hList)
 	
 	ListView_GetItemText(hList, lvi.iItem, 1, buff, SIZEOF(buff));
 	if (_tcscmp(buff, TranslateT(DEFAULT_SOUND)) == 0) {
-		if (hlpStatus == ID_STATUS_FROMOFFLINE)
-			SkinPlaySound("UserFromOffline");
+		if (hlpStatus < ID_STATUS_MIN)
+			SkinPlaySound(StatusListEx[hlpStatus].lpzSkinSoundName);
 		else
 			SkinPlaySound(StatusList[Index(hlpStatus)].lpzSkinSoundName);
 	}
@@ -64,6 +64,8 @@ TCHAR *SelectSound(HWND hwndDlg, TCHAR *buff)
 
 	HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
 	ListView_GetItemText(hList, ListView_GetNextItem(hList,- 1, LVNI_SELECTED), 1, buff, SIZEOF(buff));
+	if (_tcscmp(buff, TranslateT(DEFAULT_SOUND)) == 0)
+		buff = NULL;
 
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetParent(hwndDlg);
@@ -138,13 +140,13 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						flags = PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND | PF2_FREECHAT | PF2_OUTTOLUNCH | PF2_ONTHEPHONE;
 
 					if ((flags & Proto_Status2Flag(i)) || i == ID_STATUS_OFFLINE) {
-						LV_ITEM lvi = { 0 };
+						LV_ITEM lvi = {0};
 						lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
 						lvi.iItem = 0;
 						lvi.iSubItem = 0;
 						lvi.iImage = Index(i);
 						lvi.lParam = (LPARAM)i;
-						lvi.pszText = TranslateTS(StatusList[Index(i)].lpzStandardText);
+						lvi.pszText = StatusList[Index(i)].lpzSkinSoundDesc;
 						lvi.iItem = ListView_InsertItem(hList, &lvi);
 
 						if (!db_get_ts(hContact, MODULE, StatusList[Index(i)].lpzSkinSoundName, &dbv)) {
@@ -158,23 +160,25 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 				}
 
-				LV_ITEM lvi = {0};
-				lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
-				lvi.iItem = 0;
-				lvi.iSubItem = 0;
-				lvi.iImage = Index(ID_STATUS_MAX) + 1; // additional icon
-				lvi.lParam = (LPARAM)ID_STATUS_FROMOFFLINE;
-				lvi.pszText = TranslateT("From offline");
-				lvi.iItem = ListView_InsertItem(hList, &lvi);
+				for (int i = 0; i <= ID_STATUSEX_MAX; i++) {
+					LV_ITEM lvi = {0};
+					lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
+					lvi.iItem = 0;
+					lvi.iSubItem = 0;
+					lvi.iImage = Index(ID_STATUS_MAX) + 1; // additional icon
+					lvi.lParam = (LPARAM)i;
+					lvi.pszText = StatusListEx[i].lpzSkinSoundDesc;
+					lvi.iItem = ListView_InsertItem(hList, &lvi);
 
-				if (!db_get_ts(hContact, MODULE, "UserFromOffline", &dbv)) {
-					_tcscpy(buff, dbv.ptszVal);
-					db_free(&dbv);
+					if (!db_get_ts(hContact, MODULE, StatusList[i].lpzSkinSoundName, &dbv)) {
+						_tcscpy(buff, dbv.ptszVal);
+						db_free(&dbv);
+					}
+					else
+						_tcscpy(buff, TranslateT(DEFAULT_SOUND));
+
+					ListView_SetItemText(hList, lvi.iItem, 1, buff);
 				}
-				else
-					_tcscpy(buff, TranslateT(DEFAULT_SOUND));
-
-				ListView_SetItemText(hList, lvi.iItem, 1, buff);
 			}
 
 			CheckDlgButton(hwndDlg, IDC_CHECK_NOTIFYSOUNDS, db_get_b(hContact, MODULE, "EnableSounds", 1));
@@ -236,16 +240,16 @@ INT_PTR CALLBACK DlgProcSoundUIPage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ListView_GetItemText(hList, lvi.iItem, 1, buff, SIZEOF(buff));
 
 				if (!_tcscmp(buff, TranslateT(DEFAULT_SOUND))) {
-					if (lvi.lParam == ID_STATUS_FROMOFFLINE)
-						db_unset(hContact, MODULE, "UserFromOffline");
+					if (lvi.lParam < ID_STATUS_MIN)
+						db_unset(hContact, MODULE, StatusListEx[lvi.lParam].lpzSkinSoundName);
 					else
 						db_unset(hContact, MODULE, StatusList[Index(lvi.lParam)].lpzSkinSoundName);
 				}
 				else {
 					TCHAR stzSoundPath[MAX_PATH] = {0};
 					PathToRelativeT(buff, stzSoundPath);
-					if (lvi.lParam == ID_STATUS_FROMOFFLINE)
-						db_set_ws(hContact, MODULE, "UserFromOffline", stzSoundPath);
+					if (lvi.lParam < ID_STATUS_MIN)
+						db_set_ws(hContact, MODULE, StatusListEx[lvi.lParam].lpzSkinSoundName, stzSoundPath);
 					else
 						db_set_ws(hContact, MODULE, StatusList[Index(lvi.lParam)].lpzSkinSoundName, stzSoundPath);
 				}

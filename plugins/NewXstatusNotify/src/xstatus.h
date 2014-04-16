@@ -41,8 +41,6 @@
 #define XSTATUS_SOUND_CHANGED		"XStatusChanged"
 #define XSTATUS_SOUND_MSGCHANGED	"XStatusMsgChanged"
 #define XSTATUS_SOUND_REMOVED		"XStatusRemove"
-#define SMSG_SOUND_MSGCHANGED		"StatusMsgChanged"
-#define SMSG_SOUND_REMOVED			"StatusMsgRemove"
 
 // tabSRMM stuff (logging to message window)
 #define EVENTTYPE_STATUSCHANGE		25368
