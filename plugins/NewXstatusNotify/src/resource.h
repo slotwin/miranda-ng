@@ -126,6 +126,7 @@
 #define IDC_OUTTOLUNCH_TX               41080
 #define IDC_XSTATUS_TX                  41081
 #define IDC_STATUSMESSAGE_TX            41082
+#define IDC_STATUSMSG_TX                41082
 #define IDC_OFFLINE_BG                  42071
 #define IDC_ONLINE_BG                   42072
 #define IDC_CHK_ONLINE2                 42072
@@ -147,6 +148,7 @@
 #define IDC_CHK_OUTTOLUNCH2             42080
 #define IDC_XSTATUS_BG                  42081
 #define IDC_STATUSMESSAGE_BG            42082
+#define IDC_STATUSMSG_BG                42082
 
 // Next default values for new objects
 // 

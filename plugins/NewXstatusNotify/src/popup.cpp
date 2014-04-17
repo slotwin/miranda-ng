@@ -21,11 +21,11 @@
 
 #include "common.h"
 
-void ShowChangePopup(MCONTACT hContact, char *szProto, WORD newStatus, TCHAR *stzText)
+void ShowChangePopup(MCONTACT hContact, char *szProto, WORD iconStatus, WORD newStatus, TCHAR *stzText, PLUGINDATA *pdp)
 {
 	POPUPDATAT ppd = {0};
 	ppd.lchContact = hContact;
-	ppd.lchIcon = LoadSkinnedProtoIcon(szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE));
+	ppd.lchIcon = LoadSkinnedProtoIcon(szProto, iconStatus);
 	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
 
 	// add group name to popup title
@@ -57,12 +57,7 @@ void ShowChangePopup(MCONTACT hContact, char *szProto, WORD newStatus, TCHAR *st
 
 	ppd.PluginWindowProc = PopupDlgProc;
 
-//	PLUGINDATA *pdp = (PLUGINDATA *)mir_calloc(sizeof(PLUGINDATA));
-//	pdp->oldStatus = oldStatus;
-//	pdp->newStatus = newStatus;
-//	pdp->hAwayMsgHook = NULL;
-//	pdp->hAwayMsgProcess = NULL;
-	ppd.PluginData = NULL/*pdp*/;
+	ppd.PluginData = pdp;
 	ppd.iSeconds = opt.PopupTimeout;
 	PUAddPopupT(&ppd);
 }

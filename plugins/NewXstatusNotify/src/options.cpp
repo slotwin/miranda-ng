@@ -300,7 +300,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			CheckDlgButton(hwndDlg, IDC_USEPOPUPCOLORS, (opt.Colors == POPUP_COLOR_POPUP) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, (opt.Colors == POPUP_COLOR_WINDOWS) ? 1 : 0);
 
-			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2 - 1; i++) {
+			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2; i++) {
 				SendDlgItemMessage(hwndDlg, (i + 2000), CPM_SETCOLOUR, 0, StatusList[Index(i)].colorBack);
 				SendDlgItemMessage(hwndDlg, (i + 1000), CPM_SETCOLOUR, 0, StatusList[Index(i)].colorText);
 				EnableWindow(GetDlgItem(hwndDlg, (i + 2000)), (opt.Colors == POPUP_COLOR_OWN));
@@ -357,7 +357,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					case IDC_USEWINCOLORS:
 					case IDC_USEPOPUPCOLORS:
 					{
-						for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2 - 1; i++) {
+						for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2; i++) {
 							EnableWindow(GetDlgItem(hwndDlg, (i + 2000)), idCtrl == IDC_USEOWNCOLORS); //Background
 							EnableWindow(GetDlgItem(hwndDlg, (i + 1000)), idCtrl == IDC_USEOWNCOLORS); //Text
 						}
@@ -370,52 +370,35 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					}
 					case IDC_PREVIEW:
 					{
-						POPUPDATAT ppd = {0};
-						ppd.iSeconds = opt.PopupTimeout;
-
-						for (int i = ID_STATUS_MIN; i <= (ID_STATUS_MAX+1); i++) {
-							WORD status = i <= ID_STATUS_MAX2 ? i : ID_STATUS_MIN;
-							ppd.lchIcon = LoadSkinnedIcon(StatusList[Index(status)].icon);
-
-							_tcscpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, 0, GSMDF_TCHAR));
-							_tcscpy(ppd.lptzText, _T(""));
+						TCHAR str[MAX_SECONDLINE] = {0};
+						for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
+							_tcscpy(str, _T(""));
 
 							if (opt.ShowStatus) {
 								if (opt.UseAlternativeText == 1)
-									_tcscpy(ppd.lptzText, _tcsninc(StatusList[Index(status)].lpzUStatusText, 4));
+									_tcscpy(str, _tcsninc(StatusList[Index(i)].lpzUStatusText, 4));
 								else
-									_tcscpy(ppd.lptzText, StatusList[Index(status)].lpzStandardText);
+									_tcscpy(str, StatusList[Index(i)].lpzStandardText);
 
 								if (opt.ShowPreviousStatus) {
 									TCHAR buff[MAX_STATUSTEXT];
-									mir_sntprintf(buff, SIZEOF(buff), TranslateTS(STRING_SHOWPREVIOUSSTATUS), StatusList[Index(status)].lpzStandardText);
-									mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s %s"), ppd.lptzText, buff);
+									mir_sntprintf(buff, SIZEOF(buff), TranslateTS(STRING_SHOWPREVIOUSSTATUS), StatusList[Index(i)].lpzStandardText);
+									mir_sntprintf(str, SIZEOF(str), _T("%s %s"), str, buff);
 								}
 							}
 
 							if (opt.ReadAwayMsg) {
-								if (ppd.lptzText[0])
-									_tcscat(ppd.lptzText, _T("\n"));
-								_tcscat(ppd.lptzText, TranslateT("This is status message"));
+								if (str[0])
+									_tcscat(str, _T("\n"));
+								_tcscat(str, TranslateT("This is status message"));
 							}
 
-							switch (opt.Colors)
-							{
-								case POPUP_COLOR_WINDOWS:
-									ppd.colorBack = GetSysColor(COLOR_BTNFACE);
-									ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
-									break;
-								case POPUP_COLOR_OWN:
-									ppd.colorBack = StatusList[Index(status)].colorBack;
-									ppd.colorText = StatusList[Index(status)].colorText;
-									break;
-								case POPUP_COLOR_POPUP:
-									ppd.colorBack = ppd.colorText = 0;
-									break;
-							}
-
-							PUAddPopupT(&ppd);
+							ShowChangePopup(NULL, NULL, i, i, str);
 						}
+						_tcscpy(str, TranslateT("This is extra status"));
+						ShowChangePopup(NULL, NULL, ID_STATUS_ONLINE, ID_STATUS_EXTRASTATUS, str);
+						_tcscpy(str, TranslateT("This is status message"));
+						ShowChangePopup(NULL, NULL, ID_STATUS_ONLINE, ID_STATUS_STATUSMSG, str);
 
 						return FALSE;
 					}
@@ -432,7 +415,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if (((LPNMHDR)lParam)->code == PSN_APPLY) {
 				char str[8];
 				DWORD ctlColour = 0;
-				for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2 - 1; i++) {
+				for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX2; i++) {
 					ctlColour = SendDlgItemMessage(hwndDlg, (i + 2000), CPM_GETCOLOUR, 0, 0);
 					StatusList[Index(i)].colorBack = SendDlgItemMessage(hwndDlg, (i + 2000), CPM_GETCOLOUR, 0, 0);
 					mir_snprintf(str, SIZEOF(str), "%ibg", i);

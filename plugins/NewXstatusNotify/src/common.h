@@ -89,9 +89,10 @@
 #define ID_STATUSEX_MAX			5
 #define STATUSEX_COUNT			6
 #define ID_STATUS_EXTRASTATUS	40081
+#define ID_STATUS_STATUSMSG		40082
 #define ID_STATUS_MIN			ID_STATUS_OFFLINE
 #define ID_STATUS_MAX			ID_STATUS_OUTTOLUNCH
-#define ID_STATUS_MAX2			ID_STATUS_EXTRASTATUS + 1
+#define ID_STATUS_MAX2			ID_STATUS_STATUSMSG
 #define STATUS_COUNT			ID_STATUS_MAX2 - ID_STATUS_MIN
 #define Index(ID_STATUS)		ID_STATUS - ID_STATUS_OFFLINE
 
@@ -122,15 +123,6 @@ typedef struct tagSTATUS
 	COLORREF colorBack;
 	COLORREF colorText;
 } STATUS;
-
-typedef struct tagPLUGINDATA
-{
-	WORD newStatus;
-	WORD oldStatus;
-	HWND hWnd;
-	HANDLE hAwayMsgProcess;
-	HANDLE hAwayMsgHook;
-} PLUGINDATA;
 
 typedef struct {
 	MCONTACT hContact;

@@ -427,61 +427,6 @@ void GetStatusText(MCONTACT hContact, WORD newStatus, WORD oldStatus, TCHAR *stz
 	}
 }
 
-void ShowStatusChangePopup(MCONTACT hContact, char *szProto, WORD oldStatus, WORD newStatus)
-{
-	WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-
-	POPUPDATAT ppd = {0};
-	ppd.lchContact = hContact;
-	ppd.lchIcon = LoadSkinnedProtoIcon(szProto, newStatus);
-	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
-
-	if (opt.ShowGroup) { //add group name to popup title
-		DBVARIANT dbv;
-		if (!db_get_ts(hContact, "CList", "Group", &dbv)) {
-			_tcsncat(ppd.lptzContactName, _T(" ("), MAX_CONTACTNAME);
-			_tcsncat(ppd.lptzContactName, dbv.ptszVal, MAX_CONTACTNAME);
-			_tcsncat(ppd.lptzContactName, _T(")"), MAX_CONTACTNAME);
-			db_free(&dbv);
-		}
-	}
-
-	TCHAR stzStatusText[MAX_SECONDLINE] = {0};
-	if (opt.ShowStatus) {
-		GetStatusText(hContact, newStatus, oldStatus, stzStatusText);
-	}
-
-	if (opt.ReadAwayMsg && myStatus != ID_STATUS_INVISIBLE && StatusHasAwayMessage(szProto, newStatus))
-		db_set_ws(hContact, MODULE, "LastPopupText", stzStatusText);
-
-	_tcsncpy(ppd.lptzText, stzStatusText, MAX_SECONDLINE);
-
-	switch (opt.Colors) {
-	case POPUP_COLOR_OWN:
-		ppd.colorBack = StatusList[Index(newStatus)].colorBack;
-		ppd.colorText = StatusList[Index(newStatus)].colorText;
-		break;
-	case POPUP_COLOR_WINDOWS:
-		ppd.colorBack = GetSysColor(COLOR_BTNFACE);
-		ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
-		break;
-	case POPUP_COLOR_POPUP:
-		ppd.colorBack = ppd.colorText = 0;
-		break;
-	}
-
-	ppd.PluginWindowProc = PopupDlgProc;
-
-	PLUGINDATA *pdp = (PLUGINDATA *)mir_calloc(sizeof(PLUGINDATA));
-	pdp->oldStatus = oldStatus;
-	pdp->newStatus = newStatus;
-	pdp->hAwayMsgHook = NULL;
-	pdp->hAwayMsgProcess = NULL;
-	ppd.PluginData = pdp;
-	ppd.iSeconds = opt.PopupTimeout;
-	PUAddPopupT(&ppd);
-}
-
 void BlinkIcon(MCONTACT hContact, char *szProto, WORD status, TCHAR *stzText)
 {
 	CLISTEVENT cle = {0};
@@ -570,8 +515,23 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : TRUE;
 	}
 
-	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
-		ShowStatusChangePopup(hContact, szProto, oldStatus, newStatus);
+	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled) {
+		WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+		TCHAR str[MAX_SECONDLINE] = {0};
+		if (opt.ShowStatus) {
+			GetStatusText(hContact, newStatus, oldStatus, str);
+		}
+
+		if (opt.ReadAwayMsg && myStatus != ID_STATUS_INVISIBLE && StatusHasAwayMessage(szProto, newStatus))
+			db_set_ws(hContact, MODULE, "LastPopupText", str);
+
+		PLUGINDATA *pdp = (PLUGINDATA *)mir_calloc(sizeof(PLUGINDATA));
+		pdp->oldStatus = oldStatus;
+		pdp->newStatus = newStatus;
+		pdp->hAwayMsgHook = NULL;
+		pdp->hAwayMsgProcess = NULL;
+		ShowChangePopup(hContact, szProto, newStatus, newStatus, str, pdp);
+	}
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
 		TCHAR *str = NULL;
@@ -740,7 +700,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		else
 			str = GetStr(&smi, templates.PopupNewSMsg);
 
-		ShowChangePopup(hContact, szProto, db_get_w(smi.hContact, smi.proto, "Status", ID_STATUS_ONLINE), str);
+		ShowChangePopup(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), ID_STATUS_STATUSMSG, str);
 
 		mir_free(str);
 	}
@@ -991,6 +951,12 @@ void InitStatusList()
 	StatusList[index].ID = ID_STATUS_EXTRASTATUS;
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40081bg", COLOR_BG_AVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40081tx", COLOR_TX_DEFAULT);
+
+	//Status message
+	index = Index(ID_STATUS_STATUSMSG);
+	StatusList[index].ID = ID_STATUS_STATUSMSG;
+	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40082bg", COLOR_BG_AVAILDEFAULT);
+	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40082tx", COLOR_TX_DEFAULT);
 
 	//From offline
 	index = ID_STATUS_FROMOFFLINE;
