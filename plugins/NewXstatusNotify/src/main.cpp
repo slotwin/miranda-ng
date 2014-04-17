@@ -808,8 +808,6 @@ void InitStatusList()
 	int index = 0;
 	//Online
 	index = Index(ID_STATUS_ONLINE);
-	StatusList[index].ID = ID_STATUS_ONLINE;
-	StatusList[index].icon = SKINICON_STATUS_ONLINE;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) is back online!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) is back online!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) is back online!"), MAX_STATUSTEXT);
@@ -822,8 +820,6 @@ void InitStatusList()
 
 	//Offline
 	index = Index(ID_STATUS_OFFLINE);
-	StatusList[index].ID = ID_STATUS_OFFLINE;
-	StatusList[index].icon = SKINICON_STATUS_OFFLINE;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) went offline! :("), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) went offline! :("), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) went offline! :("), MAX_STATUSTEXT);
@@ -836,8 +832,6 @@ void InitStatusList()
 
 	//Invisible
 	index = Index(ID_STATUS_INVISIBLE);
-	StatusList[index].ID = ID_STATUS_INVISIBLE;
-	StatusList[index].icon = SKINICON_STATUS_INVISIBLE;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) hides in shadows..."), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) hides in shadows..."), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) hides in shadows..."), MAX_STATUSTEXT);
@@ -850,8 +844,6 @@ void InitStatusList()
 
 	//Free for chat
 	index = Index(ID_STATUS_FREECHAT);
-	StatusList[index].ID = ID_STATUS_FREECHAT;
-	StatusList[index].icon = SKINICON_STATUS_FREE4CHAT;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) feels talkative!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) feels talkative!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) feels talkative!"), MAX_STATUSTEXT);
@@ -864,8 +856,6 @@ void InitStatusList()
 
 	//Away
 	index = Index(ID_STATUS_AWAY);
-	StatusList[index].ID = ID_STATUS_AWAY;
-	StatusList[index].icon = SKINICON_STATUS_AWAY;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) went away"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) went away"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) went away"), MAX_STATUSTEXT);
@@ -878,8 +868,6 @@ void InitStatusList()
 
 	//NA
 	index = Index(ID_STATUS_NA);
-	StatusList[index].ID = ID_STATUS_NA;
-	StatusList[index].icon = SKINICON_STATUS_NA;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) isn't there anymore!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) isn't there anymore!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) isn't there anymore!"), MAX_STATUSTEXT);
@@ -892,8 +880,6 @@ void InitStatusList()
 
 	//Occupied
 	index = Index(ID_STATUS_OCCUPIED);
-	StatusList[index].ID = ID_STATUS_OCCUPIED;
-	StatusList[index].icon = SKINICON_STATUS_OCCUPIED;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) has something else to do"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) has something else to do"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) has something else to do"), MAX_STATUSTEXT);
@@ -906,8 +892,6 @@ void InitStatusList()
 
 	//DND
 	index = Index(ID_STATUS_DND);
-	StatusList[index].ID = ID_STATUS_DND;
-	StatusList[index].icon = SKINICON_STATUS_DND;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) doesn't want to be disturbed!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) doesn't want to be disturbed!"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) doesn't want to be disturbed!"), MAX_STATUSTEXT);
@@ -920,8 +904,6 @@ void InitStatusList()
 
 	//Out to lunch
 	index = Index(ID_STATUS_OUTTOLUNCH);
-	StatusList[index].ID = ID_STATUS_OUTTOLUNCH;
-	StatusList[index].icon = SKINICON_STATUS_OUTTOLUNCH;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) is eating something"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) is eating something"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) is eating something"), MAX_STATUSTEXT);
@@ -934,8 +916,6 @@ void InitStatusList()
 
 	//On the phone
 	index = Index(ID_STATUS_ONTHEPHONE);
-	StatusList[index].ID = ID_STATUS_ONTHEPHONE;
-	StatusList[index].icon = SKINICON_STATUS_ONTHEPHONE;
 	lstrcpyn(StatusList[index].lpzMStatusText, TranslateT("(M) had to answer the phone"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzFStatusText, TranslateT("(F) had to answer the phone"), MAX_STATUSTEXT);
 	lstrcpyn(StatusList[index].lpzUStatusText, TranslateT("(U) had to answer the phone"), MAX_STATUSTEXT);
@@ -948,49 +928,41 @@ void InitStatusList()
 
 	//Extra status
 	index = Index(ID_STATUS_EXTRASTATUS);
-	StatusList[index].ID = ID_STATUS_EXTRASTATUS;
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40081bg", COLOR_BG_AVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40081tx", COLOR_TX_DEFAULT);
 
 	//Status message
 	index = Index(ID_STATUS_STATUSMSG);
-	StatusList[index].ID = ID_STATUS_STATUSMSG;
 	StatusList[index].colorBack = db_get_dw(NULL, MODULE, "40082bg", COLOR_BG_AVAILDEFAULT);
 	StatusList[index].colorText = db_get_dw(NULL, MODULE, "40082tx", COLOR_TX_DEFAULT);
 
 	//From offline
 	index = ID_STATUS_FROMOFFLINE;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "UserFromOffline", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("User: from offline (has priority!)"), MAX_SKINSOUNDDESC);
 
 	//Status message removed
 	index = ID_STATUS_SMSGREMOVED;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgRemove", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Status message removed"), MAX_SKINSOUNDDESC);
 
 	//Status message changed
 	index = ID_STATUS_SMSGCHANGED;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgChanged", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Status message changed"), MAX_SKINSOUNDDESC);
 
 	//Extra status removed
 	index = ID_STATUS_XREMOVED;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_REMOVED, MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status removed"), MAX_SKINSOUNDDESC);
 
 	//Extra status message changed
 	index = ID_STATUS_XMSGCHANGED;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_MSGCHANGED, MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status message changed"), MAX_SKINSOUNDDESC);
 
 	//Extra status changed
 	index = ID_STATUS_XCHANGED;
-	StatusListEx[index].ID = index;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_CHANGED, MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status changed"), MAX_SKINSOUNDDESC);
 }

@@ -111,8 +111,6 @@
 
 typedef struct tagSTATUS
 {
-	int ID;
-	int icon;
 	TCHAR lpzMStatusText[MAX_STATUSTEXT];
 	TCHAR lpzFStatusText[MAX_STATUSTEXT];
 	TCHAR lpzUStatusText[MAX_STATUSTEXT];
