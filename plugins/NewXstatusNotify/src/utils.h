@@ -24,7 +24,6 @@
 
 TCHAR *db2t(DBVARIANT *dbv);
 int DBGetStringDefault(MCONTACT hContact, const char *szModule, const char *szSetting, TCHAR *setting, int size, const TCHAR *defaultValue);
-void HigherLower(int maxValue, int minValue);
 void ShowLog(TCHAR *file);
 BOOL StatusHasAwayMessage(char *szProto, int status);
 void LogToFile(TCHAR *stzText);

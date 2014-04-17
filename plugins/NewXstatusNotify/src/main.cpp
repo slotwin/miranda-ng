@@ -33,7 +33,7 @@ STATUS StatusListEx[STATUSEX_COUNT];
 HWND SecretWnd;
 int hLangpack;
 
-int ContactStatusChanged(MCONTACT hContact, WORD oldStatus,WORD newStatus);
+int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus);
 
 PLUGININFOEX pluginInfoEx = {
 	sizeof(PLUGININFOEX),

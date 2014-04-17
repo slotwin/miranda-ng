@@ -49,7 +49,7 @@ BEGIN
     CONTROL         "Notify me for people not in my Contact List",IDC_HIDDENCONTACTSTOO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,103,278,10
     CONTROL         "Blink icon in the system tray",IDC_BLINKICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,129,278,10
-    CONTROL         "Use status icon",IDC_BLINKICON_STATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,142,278,10
+    CONTROL         "Use status icon",IDC_BLINKICON_STATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,142,88,10
     CONTROL         "Use individual sounds",IDC_USEINDIVSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,116,278,10
     GROUPBOX        "Log to file",IDC_STATIC,4,161,292,28
     CONTROL         "Enable",IDC_LOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,173,57,10
@@ -62,6 +62,8 @@ BEGIN
     CONTROL         "Log status changes in history",IDC_LOGTODB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,201,278,8
     CONTROL         "Only when message window is open",IDC_CHECKMESSAGEWINDOW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,213,270,11
+    CONTROL         "Also when extra status or status message changes",IDC_BLINKICON_FORMSGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,103,142,185,10
 END
 
 IDD_INFO_SOUNDS DIALOGEX 0, 0, 222, 152

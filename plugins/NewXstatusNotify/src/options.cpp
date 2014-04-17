@@ -177,7 +177,9 @@ INT_PTR CALLBACK DlgProcGeneralOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_USEINDIVSOUNDS, opt.UseIndSnd);
 			CheckDlgButton(hwndDlg, IDC_BLINKICON, opt.BlinkIcon);
 			CheckDlgButton(hwndDlg, IDC_BLINKICON_STATUS, opt.BlinkIcon_Status);
+			CheckDlgButton(hwndDlg, IDC_BLINKICON_FORMSGS, opt.BlinkIcon_ForMsgs);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BLINKICON_STATUS), opt.BlinkIcon);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BLINKICON_FORMSGS), opt.BlinkIcon);
 
 			CheckDlgButton(hwndDlg, IDC_LOG, opt.Log);
 			SetDlgItemText(hwndDlg, IDC_LOGFILE, opt.LogFilePath);
@@ -210,6 +212,7 @@ INT_PTR CALLBACK DlgProcGeneralOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				case IDC_BLINKICON:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_BLINKICON_STATUS), IsDlgButtonChecked(hwndDlg, IDC_BLINKICON));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_BLINKICON_FORMSGS), IsDlgButtonChecked(hwndDlg, IDC_BLINKICON));
 					break;
 				case IDC_BT_VIEWLOG:
 					ShowLog(opt.LogFilePath);
@@ -256,6 +259,7 @@ INT_PTR CALLBACK DlgProcGeneralOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				opt.AutoDisable = IsDlgButtonChecked(hwndDlg, IDC_AUTODISABLE);
 				opt.BlinkIcon = IsDlgButtonChecked(hwndDlg, IDC_BLINKICON);
 				opt.BlinkIcon_Status = IsDlgButtonChecked(hwndDlg, IDC_BLINKICON_STATUS);
+				opt.BlinkIcon_ForMsgs = IsDlgButtonChecked(hwndDlg, IDC_BLINKICON_FORMSGS);
 				opt.HiddenContactsToo = IsDlgButtonChecked(hwndDlg, IDC_HIDDENCONTACTSTOO);
 				opt.UseIndSnd = IsDlgButtonChecked(hwndDlg, IDC_USEINDIVSOUNDS);
 

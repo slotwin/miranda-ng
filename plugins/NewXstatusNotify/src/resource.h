@@ -72,6 +72,7 @@
 #define IDC_CONNECTIONTIMEOUT_VALUE     1067
 #define IDC_BLINKICON_STATUS            1068
 #define IDC_SOUNDICON                   1069
+#define IDC_BLINKICON_FORMSGS           1069
 #define IDC_POPUPICON                   1070
 #define IDC_CHECK_NOTIFYSOUNDS          1071
 #define IDC_CHECK_NOTIFYPOPUPS          1073
@@ -125,7 +126,6 @@
 #define IDC_ONTHEPHONE_TX               41079
 #define IDC_OUTTOLUNCH_TX               41080
 #define IDC_XSTATUS_TX                  41081
-#define IDC_STATUSMESSAGE_TX            41082
 #define IDC_STATUSMSG_TX                41082
 #define IDC_OFFLINE_BG                  42071
 #define IDC_ONLINE_BG                   42072
@@ -147,7 +147,6 @@
 #define IDC_OUTTOLUNCH_BG               42080
 #define IDC_CHK_OUTTOLUNCH2             42080
 #define IDC_XSTATUS_BG                  42081
-#define IDC_STATUSMESSAGE_BG            42082
 #define IDC_STATUSMSG_BG                42082
 
 // Next default values for new objects
