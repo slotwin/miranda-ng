@@ -65,20 +65,14 @@ TCHAR *db2t(DBVARIANT *dbv)
 int DBGetStringDefault(MCONTACT hContact, const char *szModule, const char *szSetting, TCHAR *setting, int size, const TCHAR *defaultValue)
 {
 	DBVARIANT dbv;
-	if ( !db_get_ts(hContact, szModule, szSetting, &dbv)) {
+	if (!db_get_ts(hContact, szModule, szSetting, &dbv)) {
 		_tcsncpy(setting, dbv.ptszVal, size);
 		db_free(&dbv);
 		return 0;
-	} 
+	}
 
 	_tcsncpy(setting, defaultValue, size);
 	return 1;
-}
-
-void HigherLower(int maxValue, int minValue) 
-{
-	TCHAR str[64] = { 0 };
-	mir_sntprintf(str, SIZEOF(str), TranslateT("You cannot specify a value lower than %d and higher than %d."), minValue, maxValue);
 }
 
 void ShowLog(TCHAR *file)
@@ -88,7 +82,7 @@ void ShowLog(TCHAR *file)
 		MessageBox(0, TranslateT("Can't open the log file!"), TranslateT("NewXstatusNotify"), MB_OK | MB_ICONERROR);
 }
 
-BOOL StatusHasAwayMessage(char *szProto, int status) 
+BOOL StatusHasAwayMessage(char *szProto, int status)
 {
 	if (szProto != NULL) {
 		unsigned long iSupportsSM = (unsigned long)CallProtoService(szProto, PS_GETCAPS, (WPARAM)PFLAGNUM_3, 0);
@@ -111,9 +105,9 @@ BOOL StatusHasAwayMessage(char *szProto, int status)
 }
 
 void LogToFile(TCHAR *stzText)
-{	
+{
 	FILE *fp = _tfopen(opt.LogFilePath, _T("a+b, ccs=UTF-8"));
-	if (fp) { 
+	if (fp) {
 		char *encodedText = mir_utf8encodeT(stzText);
 		if (encodedText) {
 			fprintf(fp, encodedText);
