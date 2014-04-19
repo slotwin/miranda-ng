@@ -86,19 +86,23 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_INDSNDLIST,"CListControl",WS_TABSTOP | 0x1d0,5,6,290,185,WS_EX_CLIENTEDGE
-    LTEXT           "Sounds",IDC_STATIC,26,200,70,9
-    LTEXT           "Popups",IDC_STATIC,26,214,70,9
-    ICON            IDI_SOUND,IDC_SOUNDICON,8,196,16,16,SS_CENTERIMAGE
-    ICON            IDI_POPUP,IDC_POPUPICON,8,210,16,16,SS_CENTERIMAGE
-    LTEXT           "Extra status notify",IDC_STATIC,119,200,86,9
-    LTEXT           "Extra status logging",IDC_STATIC,119,214,86,9
-    ICON            IDI_XSTATUS,IDC_XSTATUSICON,101,196,16,16,SS_CENTERIMAGE
-    ICON            IDI_LOGGING,IDC_LOGGINGICON,101,210,16,16,SS_CENTERIMAGE
-    LTEXT           "Disable all",IDC_STATIC,229,200,60,9
-    LTEXT           "Enable all",IDC_STATIC,229,214,60,9
-    ICON            IDI_DISABLEALL,IDC_DISABLEALLICON,211,196,16,16,SS_CENTERIMAGE
-    ICON            IDI_ENABLEALL,IDC_ENABLEALLICON,211,210,16,16,SS_CENTERIMAGE
+    CONTROL         "",IDC_INDSNDLIST,"CListControl",WS_TABSTOP | 0x1d0,5,5,290,170,WS_EX_CLIENTEDGE
+    ICON            IDI_SOUND,IDC_SOUNDICON,8,178,21,20,SS_CENTERIMAGE
+    ICON            IDI_POPUP,IDC_POPUPICON,109,178,21,20,SS_CENTERIMAGE
+    LTEXT           "Sounds",IDC_STATIC,26,182,80,9
+    LTEXT           "Popups",IDC_STATIC,127,182,80,9
+    ICON            IDI_XSTATUS,IDC_XSTATUSICON,8,194,21,20,SS_CENTERIMAGE
+    ICON            IDI_LOGGING_XSTATUS,IDC_XLOGGINGICON,109,194,21,20,SS_CENTERIMAGE
+    LTEXT           "Extra status notify",IDC_STATIC,26,198,80,9
+    LTEXT           "Extra status logging",IDC_STATIC,127,198,80,9
+    ICON            IDI_DISABLEALL,IDC_DISABLEALLICON,211,178,21,20,SS_CENTERIMAGE
+    ICON            IDI_ENABLEALL,IDC_ENABLEALLICON,211,194,21,20,SS_CENTERIMAGE
+    LTEXT           "Disable all",IDC_STATIC,229,182,60,9
+    LTEXT           "Enable all",IDC_STATIC,229,198,60,9
+    ICON            IDI_STATUS_MESSAGE,IDC_SMSGICON,8,210,20,20,SS_CENTERIMAGE
+    ICON            IDI_LOGGING_SMSG,IDC_SMSGLOGGINGICON,109,210,20,20,SS_CENTERIMAGE
+    LTEXT           "Status message notify",IDC_STATIC,26,214,80,9
+    LTEXT           "Status message logging",IDC_STATIC,127,214,80,9
 END
 
 IDD_OPT_POPUP DIALOGEX 0, 0, 309, 233
@@ -306,6 +310,8 @@ IDI_DISABLEALL          ICON                    "disable_all.ico"
 IDI_ENABLEALL           ICON                    "enable_all.ico"
 IDI_VARIABLES           ICON                    "variables.ico"
 IDI_STATUS_MESSAGE      ICON                    "status_message.ico"
+IDI_LOGGING_XSTATUS     ICON                    "logging_xstatus.ico"
+IDI_LOGGING_SMSG        ICON                    "logging_status_message.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -342,6 +348,10 @@ END
 GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPT_GENERAL, DIALOG
+    BEGIN
+    END
+
+    IDD_OPT_FILTERS, DIALOG
     BEGIN
     END
 

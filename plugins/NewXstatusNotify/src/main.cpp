@@ -656,6 +656,8 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	}
 
 	// check per-contact ignored events
+	if (db_get_b(hContact, MODULE, "EnableSMsgNotify", 1) == 0)
+		bEnableSound = bEnablePopup = false;
 
 	// we're offline or just connecting
 	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE || (db_get_b(0, MODULE, smi.proto, 1) == 0 && !opt.PSMOnConnect))
@@ -680,8 +682,8 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 		mir_snprintf(statusIDs, SIZEOF(statusIDs), "s%d", myStatus);
 		mir_snprintf(statusIDp, SIZEOF(statusIDp), "p%d", myStatus);
-		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : TRUE;
-		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : TRUE;
+		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : bEnableSound;
+		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : bEnablePopup;
 	}
 
 	// check flags

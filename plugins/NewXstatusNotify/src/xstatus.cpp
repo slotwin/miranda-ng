@@ -164,19 +164,18 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 		break;
 	}
 
-	TCHAR *ptszGroup = NULL;
-	TCHAR *ptszNick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)xsc->hContact, GSMDF_TCHAR);
-	if (opt.ShowGroup) { //add group name to popup title
+	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, xsc->hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
+
+	// add group name to popup title
+	if (opt.ShowGroup) {
+		DBVARIANT dbv;
 		if (!db_get_ts(xsc->hContact, "CList", "Group", &dbv)) {
-			ptszGroup = NEWTSTR_ALLOCA(dbv.ptszVal);
+			_tcsncat(ppd.lptzContactName, _T(" ("), MAX_CONTACTNAME);
+			_tcsncat(ppd.lptzContactName, dbv.ptszVal, MAX_CONTACTNAME);
+			_tcsncat(ppd.lptzContactName, _T(")"), MAX_CONTACTNAME);
 			db_free(&dbv);
 		}
 	}
-
-	if (ptszGroup)
-		mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME,_T("%s (%s)"), ptszNick, ptszGroup);
-	else
-		_tcsncpy(ppd.lptzContactName, ptszNick, MAX_CONTACTNAME);
 
 	// cut message if needed
 	if (opt.PTruncateMsg && (opt.PMsgLen > 0) && xsc->stzText && (_tcslen(xsc->stzText) > opt.PMsgLen)) {
@@ -344,7 +343,7 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 	if (!(templates.LogFlags & xsc->action))
 		enableLog = FALSE;
 
-	if (enableLog && db_get_b(xsc->hContact, MODULE, "EnableLogging", 1) && CheckMsgWnd(xsc->hContact))
+	if (enableLog && db_get_b(xsc->hContact, MODULE, "EnableXLogging", 1) && CheckMsgWnd(xsc->hContact))
 		LogToMessageWindow(xsc, FALSE);
 
 	if (opt.Log)

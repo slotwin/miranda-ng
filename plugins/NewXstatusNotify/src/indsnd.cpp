@@ -297,7 +297,7 @@ void ResetListOptions(HWND hwndList)
 	for (int i = 0; i <= FONTID_MAX; i++)
 		SendMessage(hwndList, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
 
-	SetWindowLongPtr(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList,GWL_STYLE) | CLS_SHOWHIDDEN);
+	SetWindowLongPtr(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | CLS_SHOWHIDDEN);
 }
 
 __inline int GetExtraImage(HWND hwndList, HANDLE hItem, int column)
@@ -312,7 +312,7 @@ __inline void SetExtraImage(HWND hwndList, HANDLE hItem, int column, int imageID
 
 void SetAllContactsIcons(HWND hwndList)
 {
-	BYTE EnableSounds, EnablePopups, EnableXStatus, EnableLogging;
+	BYTE EnableSounds, EnablePopups, EnableXStatus, EnableXLogging, EnableStatusMsg, EnableSMsgLogging;
 
 	for (MCONTACT hContact = db_find_first(); hContact; hContact = db_find_next(hContact)) {
 		HANDLE hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, hContact, 0);
@@ -322,15 +322,19 @@ void SetAllContactsIcons(HWND hwndList)
 				EnableSounds = db_get_b(hContact, MODULE, "EnableSounds", 1);
 				EnablePopups = db_get_b(hContact, MODULE, "EnablePopups", 1);
 				EnableXStatus = db_get_b(hContact, MODULE, "EnableXStatusNotify", 1);
-				EnableLogging = db_get_b(hContact, MODULE, "EnableLogging", 1);
+				EnableXLogging = db_get_b(hContact, MODULE, "EnableXLogging", 1);
+				EnableStatusMsg = db_get_b(hContact, MODULE, "EnableSMsgNotify", 1);
+				EnableSMsgLogging = db_get_b(hContact, MODULE, "EnableSMsgLogging", 1);
 			}
 			else
-				EnableSounds = EnablePopups = EnableXStatus = EnableLogging = 0;
+				EnableSounds = EnablePopups = EnableXStatus = EnableXLogging = EnableStatusMsg = EnableSMsgLogging = 0;
 
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_SOUND, EnableSounds ? EXTRA_IMAGE_SOUND : EXTRA_IMAGE_DOT);
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_POPUP, EnablePopups? EXTRA_IMAGE_POPUP : EXTRA_IMAGE_DOT);
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_XSTATUS, EnableXStatus ? EXTRA_IMAGE_XSTATUS : EXTRA_IMAGE_DOT);
-			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_LOGGING, EnableLogging ? EXTRA_IMAGE_LOGGING : EXTRA_IMAGE_DOT);
+			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_XLOGGING, EnableXLogging ? EXTRA_IMAGE_XLOGGING : EXTRA_IMAGE_DOT);
+			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_STATUSMSG, EnableStatusMsg ? EXTRA_IMAGE_STATUSMSG : EXTRA_IMAGE_DOT);
+			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_SMSGLOGGING, EnableSMsgLogging ? EXTRA_IMAGE_SMSGLOGGING : EXTRA_IMAGE_DOT);
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_DISABLEALL, EXTRA_IMAGE_DISABLEALL);
 			SetExtraImage(hwndList, hItem, EXTRA_IMAGE_ENABLEALL, EXTRA_IMAGE_ENABLEALL);
 		}
@@ -339,14 +343,14 @@ void SetAllContactsIcons(HWND hwndList)
 
 void SetGroupsIcons(HWND hwndList, HANDLE hFirstItem, HANDLE hParentItem, int *groupChildCount)
 {
-	int iconOn[6] = { 1, 1, 1, 1, 1, 1 };
-	int childCount[6] = {0};
+	int iconOn[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+	int childCount[8] = {0};
 	HANDLE hItem;
 
 	int typeOfFirst = SendMessage(hwndList, CLM_GETITEMTYPE, (WPARAM)hFirstItem, 0);
 	if (typeOfFirst == CLCIT_GROUP)
 		hItem = hFirstItem;
-	else 
+	else
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTGROUP, (LPARAM)hFirstItem);
 
 	while (hItem) {
@@ -365,7 +369,7 @@ void SetGroupsIcons(HWND hwndList, HANDLE hFirstItem, HANDLE hParentItem, int *g
 	//check contacts
 	if (typeOfFirst == CLCIT_CONTACT)
 		hItem = hFirstItem;
-	else 
+	else
 		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXTCONTACT, (LPARAM)hFirstItem);
 
 	while (hItem) {
@@ -431,23 +435,27 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 			HIMAGELIST hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 3, 3);
 
-			ImageList_AddIcon(hImageList, LoadIcon(hInst,MAKEINTRESOURCE(IDI_SOUND)));
-			SendDlgItemMessage(hwndDlg,IDC_SOUNDICON,STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_SOUND, ILD_NORMAL), 0);
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_SOUND)));
+			SendDlgItemMessage(hwndDlg, IDC_SOUNDICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_SOUND, ILD_NORMAL), 0);
 			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_POPUP)));
 			SendDlgItemMessage(hwndDlg, IDC_POPUPICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_POPUP, ILD_NORMAL), 0);
-			ImageList_AddIcon(hImageList, LoadIcon(hInst,MAKEINTRESOURCE(IDI_XSTATUS)));
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_XSTATUS)));
 			SendDlgItemMessage(hwndDlg, IDC_XSTATUSICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_XSTATUS, ILD_NORMAL), 0);
-			ImageList_AddIcon(hImageList, LoadIcon(hInst,MAKEINTRESOURCE(IDI_LOGGING)));
-			SendDlgItemMessage(hwndDlg, IDC_LOGGINGICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_LOGGING, ILD_NORMAL), 0);
-			ImageList_AddIcon(hImageList, LoadIcon(hInst,MAKEINTRESOURCE(IDI_DISABLEALL)));
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_LOGGING_XSTATUS)));
+			SendDlgItemMessage(hwndDlg, IDC_XLOGGINGICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_XLOGGING, ILD_NORMAL), 0);
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_STATUS_MESSAGE)));
+			SendDlgItemMessage(hwndDlg, IDC_SMSGICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_STATUSMSG, ILD_NORMAL), 0);
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_LOGGING_SMSG)));
+			SendDlgItemMessage(hwndDlg, IDC_SMSGLOGGINGICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_SMSGLOGGING, ILD_NORMAL), 0);
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_DISABLEALL)));
 			SendDlgItemMessage(hwndDlg, IDC_DISABLEALLICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_DISABLEALL, ILD_NORMAL), 0);
-			ImageList_AddIcon(hImageList, LoadIcon(hInst,MAKEINTRESOURCE(IDI_ENABLEALL)));
+			ImageList_AddIcon(hImageList, LoadIcon(hInst, MAKEINTRESOURCE(IDI_ENABLEALL)));
 			SendDlgItemMessage(hwndDlg, IDC_ENABLEALLICON, STM_SETICON, (WPARAM)ImageList_GetIcon(hImageList, EXTRA_IMAGE_ENABLEALL, ILD_NORMAL), 0);
 
 			ImageList_AddIcon(hImageList, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
 
 			SendDlgItemMessage(hwndDlg, IDC_INDSNDLIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hImageList);
-			SendDlgItemMessage(hwndDlg, IDC_INDSNDLIST, CLM_SETEXTRACOLUMNS, 6, 0);
+			SendDlgItemMessage(hwndDlg, IDC_INDSNDLIST, CLM_SETEXTRACOLUMNS, 8, 0);
 
 			HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
 			ResetListOptions(hList);
@@ -482,7 +490,7 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					break;
 				case NM_CLICK:
 					{
-						NMCLISTCONTROL *nm = (NMCLISTCONTROL*)lParam;
+						NMCLISTCONTROL *nm = (NMCLISTCONTROL *)lParam;
 						DWORD hitFlags;
 
 						// Make sure we have an extra column
@@ -502,17 +510,17 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						int image = GetExtraImage(hList, hItem, nm->iColumn);
 						if (image == EXTRA_IMAGE_DOT)
 							image = nm->iColumn;
-						else if (image >= EXTRA_IMAGE_SOUND && image <= EXTRA_IMAGE_LOGGING)
+						else if (image >= EXTRA_IMAGE_SOUND && image <= EXTRA_IMAGE_SMSGLOGGING)
 							image = EXTRA_IMAGE_DOT;
 
 						// Get item type (contact, group, etc...)
 						if (itemType == CLCIT_CONTACT) {
 							if (image == EXTRA_IMAGE_DISABLEALL) {
-								for (int i = 0; i < 4; i++)
+								for (int i = 0; i < 6; i++)
 									SetExtraImage(hList, hItem, i, EXTRA_IMAGE_DOT);
 							}
 							else if (image == EXTRA_IMAGE_ENABLEALL) {
-								for (int i = 0; i < 4; i++)
+								for (int i = 0; i < 6; i++)
 									SetExtraImage(hList, hItem, i, i);
 							}
 							else
@@ -524,11 +532,11 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 							if (hItem) {
 								if (image == EXTRA_IMAGE_DISABLEALL) {
-									for (int i = 0; i < 4; i++)
+									for (int i = 0; i < 6; i++)
 										SetAllChildrenIcons(hList, hItem, i, EXTRA_IMAGE_DOT);
 								}
 								else if (image == EXTRA_IMAGE_ENABLEALL) {
-									for (int i = 0; i < 4; i++)
+									for (int i = 0; i < 6; i++)
 										SetAllChildrenIcons(hList, hItem, i, i);
 								}
 								else
@@ -565,10 +573,20 @@ INT_PTR CALLBACK DlgProcFiltering(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							else
 								db_set_b(hContact, MODULE, "EnableXStatusNotify", 0);
 
-							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_LOGGING) == EXTRA_IMAGE_LOGGING)
-								db_unset(hContact, MODULE, "EnableLogging");
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_XLOGGING) == EXTRA_IMAGE_XLOGGING)
+								db_unset(hContact, MODULE, "EnableXLogging");
 							else
-								db_set_b(hContact, MODULE, "EnableLogging", 0);
+								db_set_b(hContact, MODULE, "EnableXLogging", 0);
+
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_STATUSMSG) == EXTRA_IMAGE_STATUSMSG)
+								db_unset(hContact, MODULE, "EnableSMsgNotify");
+							else
+								db_set_b(hContact, MODULE, "EnableSMsgNotify", 0);
+
+							if (GetExtraImage(hList, hItem, EXTRA_IMAGE_SMSGLOGGING) == EXTRA_IMAGE_SMSGLOGGING)
+								db_unset(hContact, MODULE, "EnableSMsgLogging");
+							else
+								db_set_b(hContact, MODULE, "EnableSMsgLogging", 0);
 						}
 					}
 					return TRUE;

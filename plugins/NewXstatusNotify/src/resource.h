@@ -1,13 +1,15 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ..\res\resource.rc
+// ..\res\resource.rc
 //
 #define IDD_OPT_XPOPUP                  101
 #define IDD_INFO_SOUNDS                 102
 #define IDD_OPT_GENERAL                 103
 #define IDI_RESET                       109
 #define IDI_VARIABLES                   110
+#define IDI_LOGGING_XSTATUS             112
 #define IDD_AUTODISABLE                 113
+#define IDI_LOGGING_SMSG                113
 #define IDD_OPT_FILTERS                 114
 #define IDD_OPT_POPUP                   115
 #define IDD_OPT_XLOG                    116
@@ -81,11 +83,15 @@
 #define IDC_SHOWALTDESCS                1077
 #define IDC_LOGGINGICON                 1078
 #define IDC_SHOWSTATUS                  1078
+#define IDC_XLOGGINGICON                1078
 #define IDC_XSTATUSICON                 1079
 #define IDC_DISABLEALLICON              1080
 #define IDC_ENABLEALLICON               1081
 #define IDC_SHOWGROUP                   1082
 #define IDC_STATUSMESSAGEICON           1082
+#define IDC_SMSGICON                    1082
+#define IDC_XLOGGINGICON2               1083
+#define IDC_SMSGLOGGINGICON             1083
 #define IDC_ONCONNECT                   1101
 #define IDC_PUIGNOREREMOVE              1102
 #define IDC_CHK_NEWSMSG                 1102
@@ -153,7 +159,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        111
+#define _APS_NEXT_RESOURCE_VALUE        114
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           101

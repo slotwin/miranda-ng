@@ -109,4 +109,12 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\logging_status_message.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </None>
+    <None Include="res\logging_xstatus.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </None>
+  </ItemGroup>
 </Project>
