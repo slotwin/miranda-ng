@@ -81,9 +81,6 @@
     <Image Include="res\enable_all.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
-    <Image Include="res\logging.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </Image>
     <Image Include="res\main_off.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>

@@ -16,7 +16,6 @@
 #define IDI_POPUP                       117
 #define IDD_OPT_SMPOPUP                 117
 #define IDI_SOUND                       118
-#define IDI_LOGGING                     119
 #define IDI_XSTATUS                     120
 #define IDI_DISABLEALL                  121
 #define IDI_ENABLEALL                   122
