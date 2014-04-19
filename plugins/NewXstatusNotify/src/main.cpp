@@ -534,7 +534,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 	}
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
-		TCHAR *str = NULL;
+		TCHAR str[256] = {0};
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s is now %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText);
 		BlinkIcon(hContact, szProto, newStatus, str);
@@ -708,7 +708,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	}
 
 	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled) {
-		TCHAR *str = NULL;
+		TCHAR str[256] = {0};
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed status message to %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), smi.newstatusmsg);
 		BlinkIcon(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), str);
