@@ -48,31 +48,32 @@
 #define EVENTTYPE_STATUSCHANGE		25368
 
 // Default templates
-#define DEFAULT_POPUP_CHANGED		TranslateT("changed %N to: %T%D%I")
-#define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %N message to:%D%I")
-#define DEFAULT_POPUP_REMOVED		TranslateT("removed %N")
-#define DEFAULT_POPUP_MSGREMOVED	TranslateT("removed %N message")
-#define DEFAULT_POPUP_SMSGCHANGED	TranslateT("changed status message to %n")
+#define DEFAULT_POPUP_CHANGED		TranslateT("changed %n to: %t\n%m")
+#define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %n message to: %m")
+#define DEFAULT_POPUP_REMOVED		TranslateT("removed %n")
+#define DEFAULT_POPUP_MSGREMOVED	TranslateT("removed %n message")
+#define DEFAULT_POPUP_SMSGCHANGED	TranslateT("changed status message to: %n")
 #define DEFAULT_POPUP_SMSGREMOVED	TranslateT("removed status message")
 
 #define DEFAULT_LOG_DELIMITER		_T(": ")
-#define DEFAULT_LOG_NEW				TranslateT("changed %N @ %T%D%I") 
-#define DEFAULT_LOG_CHANGEMSG		TranslateT("changed %N message @ %I")
-#define DEFAULT_LOG_REMOVE			TranslateT("removed %N") 
-#define DEFAULT_LOG_OPENING			TranslateT("has %N @ %T%D%I")
+#define DEFAULT_LOG_NEW				TranslateT("changed %n @ %t: %m")
+#define DEFAULT_LOG_CHANGEMSG		TranslateT("changed %n message @ %m")
+#define DEFAULT_LOG_REMOVE			TranslateT("removed %n")
+#define DEFAULT_LOG_OPENING			TranslateT("has %n @ %t: %m")
 
 // Variables help text
 #define VARIABLES_HELP_TEXT TranslateT("These variables are available:\r\n\r\n\
-%N\textra status name (Xstatus, Mood, Activity)\r\n\
-%T\textra status title\r\n\
-%I\textra status text\r\n\
-%D\tdelimiter\r\n\
-%B\tline break (can be used as delimiter)")
+%n\textra status name (Xstatus, Mood, Activity)\r\n\
+%t\textra status title\r\n\
+%m\textra status message\r\n\
+%c\tcustom nickname\r\n\
+\\n\tline break\r\n\
+\\t\ttab stop")
 
 #define VARIABLES_SM_HELP_TEXT TranslateT("These variables are available:\r\n\r\n\
-%n\tNew Status Message\r\n\
-%o\tOld Status Message\r\n\
-%c\tCustom Nickname\r\n\
+%n\tnew status message\r\n\
+%o\told status message\r\n\
+%c\tcustom nickname\r\n\
 \\n\tline break\r\n\
 \\t\ttab stop")
 
@@ -96,6 +97,6 @@ TCHAR *GetDefaultXstatusName(int statusID, char *szProto, TCHAR *buff, int buffl
 XSTATUSCHANGE *NewXSC(MCONTACT hContact, char *szProto, int xstatusType, int action, TCHAR *stzTitle, TCHAR *stzText);
 void ExtraStatusChanged(XSTATUSCHANGE *xsc);
 void FreeXSC(XSTATUSCHANGE *xsc);
-int  OnWindowEvent(WPARAM wParam, LPARAM lParam);
+int OnWindowEvent(WPARAM wParam, LPARAM lParam);
 
 #endif

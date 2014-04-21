@@ -153,4 +153,5 @@ extern STATUS StatusList[STATUS_COUNT];
 extern STATUS StatusListEx[STATUSEX_COUNT];
 
 bool CheckMsgWnd(MCONTACT hContact);
+TCHAR* AddCR(const TCHAR *statusmsg);
 #endif //COMMON_H

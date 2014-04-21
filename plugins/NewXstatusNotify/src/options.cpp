@@ -654,7 +654,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				GetDlgItemText(hwndDlg, IDC_ED_TCHANGE, templates.PopupXstatusChanged, SIZEOF(templates.PopupXstatusChanged));
 				GetDlgItemText(hwndDlg, IDC_ED_TCHANGEMSG, templates.PopupMsgChanged, SIZEOF(templates.PopupMsgChanged));
 				GetDlgItemText(hwndDlg, IDC_ED_TREMOVE, templates.PopupXstatusRemoved, SIZEOF(templates.PopupXstatusRemoved));
-				GetDlgItemText(hwndDlg, IDC_ED_TCHANGEMSG, templates.PopupMsgRemoved, SIZEOF(templates.PopupMsgRemoved));
+				GetDlgItemText(hwndDlg, IDC_ED_TREMOVEMSG, templates.PopupMsgRemoved, SIZEOF(templates.PopupMsgRemoved));
 
 				// Save options to db
 				SaveOptions();

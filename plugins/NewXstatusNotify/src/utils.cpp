@@ -21,7 +21,6 @@
 
 #include "common.h"
 
-
 // From NewEventNotify :-)
 bool CheckMsgWnd(MCONTACT hContact)
 {

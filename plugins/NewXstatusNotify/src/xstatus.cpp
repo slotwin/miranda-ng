@@ -53,7 +53,7 @@ void RemoveLoggedEvents(MCONTACT hContact)
 	}
 }
 
-TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
+TCHAR* GetStatusTypeAsString(int type, TCHAR *buff)
 {
 	switch (type) {
 	case TYPE_JABBER_MOOD:
@@ -69,49 +69,87 @@ TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-void ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *Template, TCHAR *buff)
+TCHAR* ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *tmplt, TCHAR *str)
 {
-	buff[0] = 0;
-	TCHAR *pch = _tcschr(Template, _T('%'));
-	while (pch != NULL) {
-		size_t len = _tcslen(buff);
-		_tcsncat(buff, Template, pch - Template);
-		buff[len + pch - Template] = 0;
+	TCHAR tmp[1024];
 
-		if (pch[1] == _T('N') || pch[1] == _T('T') || pch[1] == _T('I') || pch[1] == _T('B')) {
-			switch (pch[1]) {
-			case _T('N'):
+	if (tmplt == NULL || tmplt[0] == _T('\0'))
+		return NULL;
+
+	str[0] = _T('\0');
+	int len = lstrlen(tmplt);
+
+	for (int i = 0; i < len; i++) {
+		tmp[0] = _T('\0');
+
+		if (tmplt[i] == _T('%')) {
+			i++;
+			switch (tmplt[i]) {
+			case 'n':
 				{
 					TCHAR stzType[32];
-					_tcscat(buff, GetStatusTypeAsString(xsc->type, stzType));
+					lstrcpyn(tmp, GetStatusTypeAsString(xsc->type, stzType), SIZEOF(tmp));
 				}
 				break;
-			case _T('T'):
-				if (xsc->stzTitle)
-					_tcscat(buff, xsc->stzTitle);
+
+			case 't':
+				if (xsc->stzTitle == NULL || xsc->stzTitle[0] == _T('\0'))
+					lstrcpyn(tmp, TranslateT("<no title>"), SIZEOF(tmp));
+				else
+					lstrcpyn(tmp, xsc->stzTitle, SIZEOF(tmp));
 				break;
-			case _T('I'):
-				if (xsc->stzText)
-					_tcscat(buff, xsc->stzText);
+
+			case 'm':
+				if (xsc->stzText == NULL || xsc->stzText[0] == _T('\0'))
+					lstrcpyn(tmp, TranslateT("<no status message>"), SIZEOF(tmp));
+				else {
+					TCHAR *_tmp = AddCR(xsc->stzText);
+					lstrcpyn(tmp, _tmp, SIZEOF(tmp));
+					mir_free(_tmp);
+				}
 				break;
-			case _T('B'):
-				_tcscat(buff, _T("\r\n"));
+
+			case 'c':
+				if (xsc->hContact == NULL)
+					lstrcpyn(tmp, TranslateT("Contact"), SIZEOF(tmp));
+				else
+					lstrcpyn(tmp, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)xsc->hContact, GCDNF_TCHAR), SIZEOF(tmp));
+				break;
+
+			default:
+				i--;
+				tmp[0] = tmplt[i], tmp[1] = _T('\0');
 				break;
 			}
-
-			Template = pch + 2;
 		}
-		else {
-			_tcscat(buff, _T("%"));
-			Template = pch + 1;
+		else if (tmplt[i] == _T('\\')) {
+			i++;
+			switch (tmplt[i]) {
+			case 'n':
+				tmp[0] = _T('\r'), tmp[1] = _T('\n'), tmp[2] = _T('\0');
+				break;
+			case 't':
+				tmp[0] = _T('\t'), tmp[1] = _T('\0');
+				break;
+			default:
+				i--;
+				tmp[0] = tmplt[i], tmp[1] = _T('\0');
+				break;
+			}
 		}
+		else tmp[0] = tmplt[i], tmp[1] = _T('\0');
 
-		pch = _tcschr(Template, _T('%'));
+		if (tmp[0] != _T('\0')) {
+			if (lstrlen(tmp) + lstrlen(str) < SIZEOF(str))
+				lstrcat(str, tmp);
+			else {
+				lstrcat(str, _T("..."));
+				break;
+			}
+		}
 	}
 
-	// append rest of the text
-	if (Template != NULL)
-		_tcscat(buff, Template);
+	return str;
 }
 
 void ShowPopup(XSTATUSCHANGE *xsc)

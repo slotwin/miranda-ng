@@ -231,7 +231,7 @@ TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 			i++;
 			switch (tmplt[i]) {
 			case 'n':
-				if (n->compare == 2 || _tcscmp(n->newstatusmsg, TranslateT("<no status message>")) == 0)
+				if (n->compare == COMPARE_DEL || _tcscmp(n->newstatusmsg, TranslateT("<no status message>")) == 0)
 					lstrcpyn(tmp, TranslateT("<no status message>"), SIZEOF(tmp));
 				else {
 					TCHAR *_tmp = AddCR(n->newstatusmsg);
@@ -251,12 +251,13 @@ TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 				break;
 
 			case 'c':
-				if (n->cust == NULL || n->cust[0] == _T('\0')) lstrcpyn(tmp, TranslateT("Contact"), SIZEOF(tmp));
-				else lstrcpyn(tmp, n->cust, SIZEOF(tmp));
+				if (n->cust == NULL || n->cust[0] == _T('\0'))
+					lstrcpyn(tmp, TranslateT("Contact"), SIZEOF(tmp));
+				else
+					lstrcpyn(tmp, n->cust, SIZEOF(tmp));
 				break;
 
 			default:
-				//lstrcpyn(tmp, _T("%"), TMPMAX);
 				i--;
 				tmp[0] = tmplt[i], tmp[1] = _T('\0');
 				break;
@@ -266,15 +267,12 @@ TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 			i++;
 			switch (tmplt[i]) {
 			case 'n':
-				//_tcscat_s(tmp, TMPMAX, _T("\r\n"));
 				tmp[0] = _T('\r'), tmp[1] = _T('\n'), tmp[2] = _T('\0');
 				break;
 			case 't':
-				//_tcscat_s(tmp, TMPMAX, _T("\t"));
 				tmp[0] = _T('\t'), tmp[1] = _T('\0');
 				break;
 			default:
-				//lstrcpyn(tmp, _T("\\"), TMPMAX);
 				i--;
 				tmp[0] = tmplt[i], tmp[1] = _T('\0');
 				break;
