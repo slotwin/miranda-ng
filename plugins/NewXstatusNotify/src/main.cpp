@@ -491,12 +491,12 @@ int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	if (db_get_b(hContact, szProto, "ChatRoom", 0) == 1)
 		return 0;
 
-	WORD oldStatus = DBGetContactSettingRangedWord(hContact, "UserOnline", "OldStatus", ID_STATUS_OFFLINE, ID_STATUS_MIN, ID_STATUS_MAX);
+	WORD oldStatus = DBGetContactSettingRangedWord(hContact, "UserOnline", "LastStatus", ID_STATUS_OFFLINE, ID_STATUS_MIN, ID_STATUS_MAX);
 	if (oldStatus == newStatus)
 		return 0;
 
 	//If we get here, the two statuses differ, so we can proceed.
-	db_set_w(hContact, "UserOnline", "OldStatus", newStatus);
+	db_set_w(hContact, "UserOnline", "LastStatus", newStatus);
 
 	// A simple implementation of Last Seen module, please don't touch this.
 	if (opt.EnableLastSeen && newStatus == ID_STATUS_OFFLINE && oldStatus > ID_STATUS_OFFLINE) {
@@ -698,9 +698,9 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 
 		TCHAR *str;
 		if (smi.compare == COMPARE_DEL)
-			str = GetStr(&smi, templates.PopupSMsgRemove);
+			str = GetStr(&smi, templates.PopupSMsgRemoved);
 		else
-			str = GetStr(&smi, templates.PopupNewSMsg);
+			str = GetStr(&smi, templates.PopupSMsgChanged);
 
 		ShowChangePopup(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), ID_STATUS_STATUSMSG, str);
 
@@ -945,7 +945,7 @@ void InitStatusList()
 
 	//Status message removed
 	index = ID_STATUS_SMSGREMOVED;
-	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgRemove", MAX_SKINSOUNDNAME);
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, "StatusMsgRemoved", MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Status message removed"), MAX_SKINSOUNDDESC);
 
 	//Status message changed
@@ -967,6 +967,11 @@ void InitStatusList()
 	index = ID_STATUS_XCHANGED;
 	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_CHANGED, MAX_SKINSOUNDNAME);
 	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status changed"), MAX_SKINSOUNDDESC);
+
+	//Extra status message removed
+	index = ID_STATUS_XMSGREMOVED;
+	lstrcpynA(StatusListEx[index].lpzSkinSoundName, XSTATUS_SOUND_MSGREMOVED, MAX_SKINSOUNDNAME);
+	lstrcpyn(StatusListEx[index].lpzSkinSoundDesc, LPGENT("Extra status message removed"), MAX_SKINSOUNDDESC);
 }
 
 VOID CALLBACK ConnectionTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)

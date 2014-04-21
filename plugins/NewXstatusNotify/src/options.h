@@ -78,12 +78,12 @@ typedef struct tagTEMPLATES {
 	BYTE PopupFlags;
 	BYTE PopupSMsgFlags;
 	BYTE LogFlags;
-	TCHAR PopupDelimiter[32];
-	TCHAR PopupNewXstatus[256];
-	TCHAR PopupNewMsg[256];
-	TCHAR PopupRemove[256];
-	TCHAR PopupNewSMsg[256];
-	TCHAR PopupSMsgRemove[256];
+	TCHAR PopupXstatusChanged[256];
+	TCHAR PopupMsgChanged[256];
+	TCHAR PopupXstatusRemoved[256];
+	TCHAR PopupMsgRemoved[256];
+	TCHAR PopupSMsgChanged[256];
+	TCHAR PopupSMsgRemoved[256];
 	TCHAR LogDelimiter[32];
 	TCHAR LogNewXstatus[256];
 	TCHAR LogNewMsg[256];

@@ -69,7 +69,7 @@ TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-void ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *Template, TCHAR *delimiter, TCHAR *buff)
+void ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *Template, TCHAR *buff)
 {
 	buff[0] = 0;
 	TCHAR *pch = _tcschr(Template, _T('%'));
@@ -78,7 +78,7 @@ void ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *Template, TCHAR *delimiter, TCHAR *
 		_tcsncat(buff, Template, pch - Template);
 		buff[len + pch - Template] = 0;
 
-		if (pch[1] == _T('N') || pch[1] == _T('T') || pch[1] == _T('I') || pch[1] == _T('D') || pch[1] == _T('B')) {
+		if (pch[1] == _T('N') || pch[1] == _T('T') || pch[1] == _T('I') || pch[1] == _T('B')) {
 			switch (pch[1]) {
 			case _T('N'):
 				{
@@ -93,14 +93,6 @@ void ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *Template, TCHAR *delimiter, TCHAR *
 			case _T('I'):
 				if (xsc->stzText)
 					_tcscat(buff, xsc->stzText);
-				break;
-			case _T('D'):
-				if (xsc->stzText) {
-					if (_tcscmp(delimiter, _T("%B")) == 0)
-						_tcscat(buff, _T("\r\n"));
-					else
-						_tcscat(buff, delimiter);
-				}
 				break;
 			case _T('B'):
 				_tcscat(buff, _T("\r\n"));
@@ -139,7 +131,6 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 			db_free(&dbv);
 		}
 		break;
-
 	case TYPE_ICQ_XSTATUS:
 		{
 			int statusId = db_get_b(xsc->hContact, xsc->szProto, "XStatusId", 0);
@@ -190,17 +181,19 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 	TCHAR *Template = _T("");
 	switch (xsc->action) {
 	case NOTIFY_NEW_XSTATUS:
-		Template = templates.PopupNewXstatus; break;
+		Template = templates.PopupXstatusChanged; break;
 	case NOTIFY_NEW_MESSAGE:
-		Template = templates.PopupNewMsg; break;
+		Template = templates.PopupMsgChanged; break;
 	case NOTIFY_REMOVE_XSTATUS:
-		Template = templates.PopupRemove; break;
+		Template = templates.PopupXstatusRemoved; break;
+	case NOTIFY_REMOVE_MESSAGE:
+		Template = templates.PopupMsgRemoved; break;
 	case NOTIFY_OPENING_ML:
 		Template = templates.LogOpening; break;
 	}
 
 	TCHAR stzPopupText[2 * MAX_TEXT_LEN];
-	ReplaceVars(xsc, Template, templates.PopupDelimiter, stzPopupText);
+	ReplaceVars(xsc, Template, stzPopupText);
 	_tcsncpy(ppd.lptzText, stzPopupText, SIZEOF(ppd.lptzText));
 	ppd.lptzText[SIZEOF(ppd.lptzText) - 1] = 0;
 
@@ -218,6 +211,8 @@ void PlayXStatusSound(int action)
 		SkinPlaySound(XSTATUS_SOUND_MSGCHANGED); break;
 	case NOTIFY_REMOVE_XSTATUS:
 		SkinPlaySound(XSTATUS_SOUND_REMOVED); break;
+	case NOTIFY_REMOVE_MESSAGE:
+		SkinPlaySound(XSTATUS_SOUND_MSGREMOVED); break;
 	}
 }
 
@@ -246,7 +241,7 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 	}
 
 	TCHAR stzLogText[2 * MAX_TEXT_LEN], stzLastLog[2 * MAX_TEXT_LEN];
-	ReplaceVars(xsc, Template, templates.LogDelimiter, stzLogText);
+	ReplaceVars(xsc, Template, stzLogText);
 	DBGetStringDefault(xsc->hContact, MODULE, DB_LASTLOG, stzLastLog, SIZEOF(stzLastLog), _T(""));
 
 	if (!opt.KeepInHistory || !(opt.PreventIdentical && _tcscmp(stzLastLog, stzLogText) == 0)) {

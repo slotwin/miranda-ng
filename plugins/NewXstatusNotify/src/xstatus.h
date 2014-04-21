@@ -41,18 +41,19 @@
 // Sounds
 #define XSTATUS_SOUND_CHANGED		"XStatusChanged"
 #define XSTATUS_SOUND_MSGCHANGED	"XStatusMsgChanged"
-#define XSTATUS_SOUND_REMOVED		"XStatusRemove"
+#define XSTATUS_SOUND_REMOVED		"XStatusRemoved"
+#define XSTATUS_SOUND_MSGREMOVED	"XStatusMsgRemoved"
 
 // tabSRMM stuff (logging to message window)
 #define EVENTTYPE_STATUSCHANGE		25368
 
 // Default templates
-#define DEFAULT_POPUP_DELIMITER		_T("%B")
-#define DEFAULT_POPUP_NEW			TranslateT("changed %N to: %T%D%I") 
-#define DEFAULT_POPUP_CHANGEMSG		TranslateT("changed %N message to:%D%I") 
-#define DEFAULT_POPUP_REMOVE		TranslateT("removed %N") 
-#define DEFAULT_POPUP_NEWSMSG		TranslateT("changed status message to %n")
-#define DEFAULT_POPUP_SMSGREMOVE	TranslateT("removed status message")
+#define DEFAULT_POPUP_CHANGED		TranslateT("changed %N to: %T%D%I")
+#define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %N message to:%D%I")
+#define DEFAULT_POPUP_REMOVED		TranslateT("removed %N")
+#define DEFAULT_POPUP_MSGREMOVED	TranslateT("removed %N message")
+#define DEFAULT_POPUP_SMSGCHANGED	TranslateT("changed status message to %n")
+#define DEFAULT_POPUP_SMSGREMOVED	TranslateT("removed status message")
 
 #define DEFAULT_LOG_DELIMITER		_T(": ")
 #define DEFAULT_LOG_NEW				TranslateT("changed %N @ %T%D%I") 

@@ -40,6 +40,7 @@
 #define IDC_ED_TOPENING                 1018
 #define IDC_ED_TCHANGE                  1024
 #define IDC_ED_TCHANGEMSG               1025
+#define IDC_ED_TREMOVEMSG               1026
 #define IDC_BT_VARIABLES                1028
 #define IDC_BT_RESET                    1029
 #define IDC_PREVIEW                     1030
@@ -48,6 +49,7 @@
 #define IDC_DELETE                      1032
 #define IDC_CHK_XSTATUSCHANGE           1032
 #define IDC_CHK_OPENING                 1033
+#define IDC_CHK_MSGREMOVE               1033
 #define IDC_UD_MSGLEN                   1034
 #define IDC_CHK_PGLOBAL                 1035
 #define IDC_CHK_SGLOBAL                 1036
