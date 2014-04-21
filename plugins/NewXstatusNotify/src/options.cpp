@@ -105,14 +105,15 @@ void SaveTemplates()
 	db_set_ts(0, MODULE, "TPopupChange", templates.PopupNewXstatus);
 	db_set_ts(0, MODULE, "TPopupChangeMsg", templates.PopupNewMsg);
 	db_set_ts(0, MODULE, "TPopupRemoval", templates.PopupRemove);
-	db_set_ts(0, MODULE, "TPopupNewSMsg", templates.PopupNewMsg);
-	db_set_ts(0, MODULE, "TPopupSMsgRemoval", templates.PopupRemove);
+	db_set_ts(0, MODULE, "TPopupNewSMsg", templates.PopupNewSMsg);
+	db_set_ts(0, MODULE, "TPopupSMsgRemoval", templates.PopupSMsgRemove);
 	db_set_ts(0, MODULE, "TLogDelimiter", templates.LogDelimiter);
 	db_set_ts(0, MODULE, "TLogChange", templates.LogNewXstatus);
 	db_set_ts(0, MODULE, "TLogChangeMsg", templates.LogNewMsg);
 	db_set_ts(0, MODULE, "TLogRemoval", templates.LogRemove);
 	db_set_ts(0, MODULE, "TLogOpening", templates.LogOpening);
 	db_set_b(0, MODULE, "TPopupFlags", templates.PopupFlags);
+	db_set_b(0, MODULE, "TPopupSMsgFlags", templates.PopupSMsgFlags);
 	db_set_b(0, MODULE, "TLogFlags", templates.LogFlags);
 }
 
@@ -566,7 +567,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			// Templates
 			CheckDlgButton(hwndDlg, IDC_CHK_XSTATUSCHANGE, templates.PopupFlags & NOTIFY_NEW_XSTATUS ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_CHK_MSGCHANGE, templates.PopupFlags & NOTIFY_NEW_MESSAGE ? 1 : 0);
-			CheckDlgButton(hwndDlg, IDC_CHK_REMOVE, templates.PopupFlags & NOTIFY_REMOVE ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_CHK_REMOVE, templates.PopupFlags & NOTIFY_REMOVE_XSTATUS ? 1 : 0);
 
 			SetDlgItemText(hwndDlg, IDC_ED_TDELIMITER, templates.PopupDelimiter);
 			SetDlgItemText(hwndDlg, IDC_ED_TCHANGE, templates.PopupNewXstatus);
@@ -575,7 +576,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), templates.PopupFlags & NOTIFY_NEW_XSTATUS);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), templates.PopupFlags & NOTIFY_NEW_MESSAGE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), templates.PopupFlags & NOTIFY_REMOVE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), templates.PopupFlags & NOTIFY_REMOVE_XSTATUS);
 
 			// Buttons
 			SendDlgItemMessage(hwndDlg, IDC_BT_VARIABLES, BUTTONADDTOOLTIP, (WPARAM)LPGENT("Show available variables"), BATF_TCHAR);
@@ -639,7 +640,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				templates.PopupFlags = 0;
 				templates.PopupFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE) ? NOTIFY_NEW_XSTATUS : 0) |
 										(IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE) ? NOTIFY_NEW_MESSAGE : 0) |
-										(IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE) ? NOTIFY_REMOVE : 0);
+										(IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE) ? NOTIFY_REMOVE_XSTATUS : 0);
 
 				// Templates
 				GetDlgItemText(hwndDlg, IDC_ED_TDELIMITER, templates.PopupDelimiter, SIZEOF(templates.PopupDelimiter));
@@ -680,13 +681,13 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			// Templates
 			CheckDlgButton(hwndDlg, IDC_CHK_NEWSMSG, templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE ? 1 : 0);
-			CheckDlgButton(hwndDlg, IDC_CHK_SMSGREMOVE, templates.PopupSMsgFlags & NOTIFY_REMOVE ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_CHK_SMSGREMOVE, templates.PopupSMsgFlags & NOTIFY_REMOVE_MESSAGE ? 1 : 0);
 
 			SetDlgItemText(hwndDlg, IDC_ED_TNEWSMSG, templates.PopupNewSMsg);
 			SetDlgItemText(hwndDlg, IDC_ED_TSMSGREMOVE, templates.PopupSMsgRemove);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), templates.PopupSMsgFlags & NOTIFY_REMOVE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), templates.PopupSMsgFlags & NOTIFY_REMOVE_MESSAGE);
 
 			// Buttons
 			SendDlgItemMessage(hwndDlg, IDC_BT_VARIABLES, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show available variables"), BATF_TCHAR);
@@ -790,7 +791,7 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			templates.PopupSMsgFlags = 0;
 			templates.PopupSMsgFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CHK_NEWSMSG) ? NOTIFY_NEW_MESSAGE : 0) |
-										(IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE) ? NOTIFY_REMOVE : 0);
+										(IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE) ? NOTIFY_REMOVE_MESSAGE : 0);
 
 			// Templates
 			GetDlgItemText(hwndDlg, IDC_ED_TNEWSMSG, templates.PopupNewSMsg, SIZEOF(templates.PopupNewSMsg));
@@ -860,7 +861,7 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			//Templates
 			CheckDlgButton(hwndDlg, IDC_CHK_XSTATUSCHANGE, (templates.LogFlags & NOTIFY_NEW_XSTATUS) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_CHK_MSGCHANGE, (templates.LogFlags & NOTIFY_NEW_MESSAGE) ? 1 : 0);
-			CheckDlgButton(hwndDlg, IDC_CHK_REMOVE, (templates.LogFlags & NOTIFY_REMOVE) ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_CHK_REMOVE, (templates.LogFlags & NOTIFY_REMOVE_XSTATUS) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_CHK_OPENING, (templates.LogFlags & NOTIFY_OPENING_ML) ? 1 : 0);
 
 			SetDlgItemText(hwndDlg, IDC_ED_TDELIMITER, templates.LogDelimiter);
@@ -953,7 +954,7 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				templates.LogFlags = 0;
 				templates.LogFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE) ? NOTIFY_NEW_XSTATUS : 0) |
 										(IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE) ? NOTIFY_NEW_MESSAGE : 0) |
-										(IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE) ? NOTIFY_REMOVE : 0) |
+										(IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE) ? NOTIFY_REMOVE_XSTATUS : 0) |
 										(IsDlgButtonChecked(hwndDlg, IDC_CHK_OPENING) ? NOTIFY_OPENING_ML : 0);
 
 				// Templates

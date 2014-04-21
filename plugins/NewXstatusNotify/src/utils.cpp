@@ -42,26 +42,6 @@ bool CheckMsgWnd(MCONTACT hContact)
 	return false;
 }
 
-
-
-TCHAR *db2t(DBVARIANT *dbv)
-{
-	TCHAR *buff;
-	switch (dbv->type) {
-		case DBVT_ASCIIZ: buff = mir_a2t(dbv->pszVal); break;
-		case DBVT_WCHAR: buff = mir_tstrdup(dbv->ptszVal); break;
-		case DBVT_UTF8: buff = mir_utf8decodeT(dbv->pszVal); break;
-		default: return NULL;
-	}
-
-	if (buff[0] == 0) {
-		mir_free(buff);
-		buff = NULL;
-	}
-		
-	return buff;
-}
-
 int DBGetStringDefault(MCONTACT hContact, const char *szModule, const char *szSetting, TCHAR *setting, int size, const TCHAR *defaultValue)
 {
 	DBVARIANT dbv;

@@ -88,104 +88,6 @@ HANDLE GetIconHandle(char *szIcon)
 	return Skin_GetIconHandle(szSettingName);
 }
 
-bool IsNewExtraStatus(MCONTACT hContact, char *szSetting, TCHAR *newStatusTitle)
-{
-	DBVARIANT dbv;
-	bool result = true;
-
-	if (!db_get_ts(hContact, MODULE, szSetting, &dbv)) {
-		result = _tcscmp(newStatusTitle, dbv.ptszVal) ? true : false;
-		db_free(&dbv);
-	}
-
-	return result;
-}
-
-int ProcessExtraStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
-{
-	XSTATUSCHANGE *xsc;
-	char *szProto = GetContactProto(hContact);
-
-	if (ProtoServiceExists(szProto, JS_PARSE_XMPP_URI)) {
-		if (cws->value.type == DBVT_DELETED)
-			return 0;
-
-		if (hContact == NULL)
-			return 0;
-
-		if (strstr(cws->szSetting, "/mood/") || strstr(cws->szSetting, "/activity/")) { // Jabber mood or activity changed
-			char *szSetting;
-			int type;
-
-			if (strstr(cws->szSetting, "/mood/")) {
-				type = TYPE_JABBER_MOOD;
-				szSetting = "LastJabberMood";
-			}
-			else {
-				type = TYPE_JABBER_ACTIVITY;
-				szSetting = "LastJabberActivity";
-			}
-
-			if (strstr(cws->szSetting, "title")) {
-				TCHAR *stzValue = db2t(&cws->value);
-				if (stzValue) {
-					if (!IsNewExtraStatus(hContact, szSetting, stzValue)) {
-						mir_free(stzValue);
-						return 0;
-					}
-
-					xsc = NewXSC(hContact, szProto, type, NOTIFY_NEW_XSTATUS, stzValue, NULL);
-					db_set_ws(hContact, MODULE, szSetting, stzValue);
-				}
-				else {
-					xsc = NewXSC(hContact, szProto, type, NOTIFY_REMOVE, NULL, NULL);
-					db_set_ws(hContact, MODULE, szSetting, _T(""));
-				}
-
-				ExtraStatusChanged(xsc);
-			}
-			else if (strstr(cws->szSetting, "text")) {
-				TCHAR *stzValue = db2t(&cws->value);
-				xsc = NewXSC(hContact, szProto, type, NOTIFY_NEW_MESSAGE, NULL, stzValue);
-				ExtraStatusChanged(xsc);
-			}
-
-			return 1;
-		}
-	}
-	else if (strstr(cws->szSetting, "XStatus")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
-		if (strcmp(cws->szSetting, "XStatusName") == 0) {
-			if (cws->value.type == DBVT_DELETED)
-				xsc = NewXSC(hContact, szProto, TYPE_ICQ_XSTATUS, NOTIFY_REMOVE, NULL, NULL);
-			else {
-				TCHAR *stzValue = db2t(&cws->value);
-				if (!stzValue) {
-					TCHAR buff[64];
-					int statusID = db_get_b(hContact, szProto, "XStatusId", -1);
-					GetDefaultXstatusName(statusID, szProto, buff, SIZEOF(buff));
-					stzValue = mir_tstrdup(buff);
-				}
-
-				xsc = NewXSC(hContact, szProto, TYPE_ICQ_XSTATUS, NOTIFY_NEW_XSTATUS, stzValue, NULL);
-			}
-
-			ExtraStatusChanged(xsc);
-		}
-		else if (strstr(cws->szSetting, "XStatusMsg")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
-			if (cws->value.type == DBVT_DELETED)
-				return 1;
-
-			TCHAR *stzValue = db2t(&cws->value);
-			xsc = NewXSC(hContact, szProto, TYPE_ICQ_XSTATUS, NOTIFY_NEW_MESSAGE, NULL, stzValue);
-			ExtraStatusChanged(xsc);
-		}
-
-		return 1;
-	}
-
-	return 0;
-}
-
 static int __inline CheckStr(char *str, int not_empty, int empty) {
 	if (str == NULL || str[0] == '\0')
 		return empty;
@@ -193,14 +95,12 @@ static int __inline CheckStr(char *str, int not_empty, int empty) {
 		return not_empty;
 }
 
-
 static int __inline CheckStrW(WCHAR *str, int not_empty, int empty) {
 	if (str == NULL || str[0] == L'\0')
 		return empty;
 	else
 		return not_empty;
 }
-
 
 WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage)
 {
@@ -214,14 +114,11 @@ WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage)
 	return tmp;
 }
 
-static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new) {
+static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new, char *szSetting) {
 	DBVARIANT dbv_old;
 	int ret;
 
 	switch (cws_new->value.type) {
-	case DBVT_DELETED:
-		smi->newstatusmsg = NULL;
-		break;
 	case DBVT_ASCIIZ:
 		smi->newstatusmsg = (CheckStr(cws_new->value.pszVal, 0, 1) ? NULL : mir_dupToUnicodeEx(cws_new->value.pszVal, CP_ACP));
 		break;
@@ -231,12 +128,13 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new) 
 	case DBVT_WCHAR:
 		smi->newstatusmsg = (CheckStrW(cws_new->value.pwszVal, 0, 1) ? NULL : mir_wstrdup(cws_new->value.pwszVal));
 		break;
+	case DBVT_DELETED:
 	default:
 		smi->newstatusmsg = NULL;
 		break;
 	}
 
-	if (!db_get_s(smi->hContact, "UserOnline", "OldStatusMsg", &dbv_old, 0)) {
+	if (!db_get_s(smi->hContact, "UserOnline", szSetting, &dbv_old, 0)) {
 		switch (dbv_old.type) {
 		case DBVT_ASCIIZ:
 			smi->oldstatusmsg = (CheckStr(dbv_old.pszVal, 0, 1) ? NULL : mir_dupToUnicodeEx(dbv_old.pszVal, CP_ACP));
@@ -279,8 +177,7 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new) 
 			ret = COMPARE_SAME;
 		else if (cws_new->value.type == DBVT_WCHAR)
 			ret = CheckStrW(cws_new->value.pwszVal, COMPARE_DIFF, COMPARE_SAME);
-		else if (cws_new->value.type == DBVT_UTF8 ||
-			cws_new->value.type == DBVT_ASCIIZ)
+		else if (cws_new->value.type == DBVT_UTF8 || cws_new->value.type == DBVT_ASCIIZ)
 			ret = CheckStr(cws_new->value.pszVal, COMPARE_DIFF, COMPARE_SAME);
 		else
 			ret = COMPARE_DIFF;
@@ -295,7 +192,7 @@ TCHAR* AddCR(const TCHAR *statusmsg)
 {
 	const TCHAR *found;
 	int i = 0, len = lstrlen(statusmsg), j;
-	TCHAR *tmp = (TCHAR*)mir_alloc(1024 * sizeof(TCHAR));
+	TCHAR *tmp = (TCHAR *)mir_alloc(1024 * sizeof(TCHAR));
 	*tmp = _T('\0');
 	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
 		j = (int)(found - statusmsg);
@@ -323,7 +220,7 @@ TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 	if (tmplt == NULL || tmplt[0] == _T('\0'))
 		return NULL;
 
-	TCHAR *str = (TCHAR*)mir_alloc(2048 * sizeof(TCHAR));
+	TCHAR *str = (TCHAR *)mir_alloc(2048 * sizeof(TCHAR));
 	str[0] = _T('\0');
 	int len = lstrlen(tmplt);
 
@@ -625,22 +522,115 @@ int ProcessStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	return 1;
 }
 
+int ProcessExtraStatus(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
+{
+	XSTATUSCHANGE *xsc;
+	STATUSMSGINFO smi;
+	char *szProto = GetContactProto(hContact);
+	smi.hContact = hContact;
+
+	if (ProtoServiceExists(szProto, JS_PARSE_XMPP_URI)) {
+		if (strstr(cws->szSetting, "/mood/") || strstr(cws->szSetting, "/activity/")) { // Jabber mood or activity changed
+			char *szSetting;
+			int type;
+
+			if (strstr(cws->szSetting, "/mood/")) {
+				type = TYPE_JABBER_MOOD;
+				szSetting = "LastJabberMood";
+			}
+			else {
+				type = TYPE_JABBER_ACTIVITY;
+				szSetting = "LastJabberActivity";
+			}
+
+			if (strstr(cws->szSetting, "title")) {
+				smi.compare = CompareStatusMsg(&smi, cws, szSetting);
+				if (smi.compare == COMPARE_SAME)
+					goto skip_jabber;
+
+				if (cws->value.type == DBVT_DELETED)
+					db_unset(hContact, "UserOnline", szSetting);
+				else
+					db_set(hContact, "UserOnline", szSetting, &cws->value);
+
+				xsc = NewXSC(hContact, szProto, type, smi.compare, smi.newstatusmsg, NULL);
+				ExtraStatusChanged(xsc);
+			}
+			else if (strstr(cws->szSetting, "text")) {
+				char dbSetting[128];
+				mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s%s", szSetting, "Msg");
+				smi.compare = CompareStatusMsg(&smi, cws, dbSetting);
+				if (smi.compare == COMPARE_SAME)
+					goto skip_jabber;
+
+				if (cws->value.type == DBVT_DELETED)
+					db_unset(hContact, "UserOnline", dbSetting);
+				else
+					db_set(hContact, "UserOnline", dbSetting, &cws->value);
+
+				xsc = NewXSC(hContact, szProto, type, smi.compare * 4, NULL, smi.newstatusmsg);
+				ExtraStatusChanged(xsc);
+			}
+skip_jabber:
+			mir_free(smi.newstatusmsg);
+			mir_free(smi.oldstatusmsg);
+			return 1;
+		}
+	}
+	else if (!strcmp(cws->szSetting, "XStatus")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
+		if (strcmp(cws->szModule, szProto))
+			return 0;
+
+		if (strcmp(cws->szSetting, "XStatusName") == 0) {
+			smi.compare = CompareStatusMsg(&smi, cws, "LastXStatusName");
+			if (smi.compare == COMPARE_SAME)
+				goto skip_xstatus;
+
+			if (cws->value.type == DBVT_DELETED)
+				db_unset(hContact, "UserOnline", "LastXStatusName");
+			else
+				db_set(hContact, "UserOnline", "LastXStatusName", &cws->value);
+
+			xsc = NewXSC(hContact, szProto, TYPE_ICQ_XSTATUS, smi.compare, smi.newstatusmsg, NULL);
+			ExtraStatusChanged(xsc);
+		}
+		else if (!strcmp(cws->szSetting, "XStatusMsg")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
+			smi.compare = CompareStatusMsg(&smi, cws, "LastXStatusMsg");
+			if (smi.compare == COMPARE_SAME)
+				goto skip_xstatus;
+
+			if (cws->value.type == DBVT_DELETED)
+				db_unset(hContact, "UserOnline", "LastXStatusMsg");
+			else
+				db_set(hContact, "UserOnline", "LastXStatusMsg", &cws->value);
+
+			xsc = NewXSC(hContact, szProto, TYPE_ICQ_XSTATUS, smi.compare * 4, NULL, smi.newstatusmsg);
+			ExtraStatusChanged(xsc);
+		}
+skip_xstatus:
+		mir_free(smi.newstatusmsg);
+		mir_free(smi.oldstatusmsg);
+		return 1;
+	}
+
+	return 0;
+}
+
 int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 {
 	STATUSMSGINFO smi;
 	bool bEnablePopup = true, bEnableSound = true;
 	char *szProto = GetContactProto(hContact);
-	if (strcmp(cws->szModule, szProto))
-		return 0;
 
-	smi.compare = CompareStatusMsg(&smi, cws);
+	smi.hContact = hContact;
+	smi.compare = CompareStatusMsg(&smi, cws, "LastStatusMsg");
 	if (smi.compare == COMPARE_SAME)
 		goto skip_notify;
 
 	if (cws->value.type == DBVT_DELETED)
-		db_unset(smi.hContact, "UserOnline", "OldStatusMsg");
+		db_unset(hContact, "UserOnline", "LastStatusMsg");
 	else
-		db_set(smi.hContact, "UserOnline", "OldStatusMsg", &cws->value);
+		db_set(hContact, "UserOnline", "LastStatusMsg", &cws->value);
 
 	//don't show popup when mradio connecting and disconnecting
 	if (_stricmp(szProto, "mRadio") == 0 && !cws->value.type == DBVT_DELETED) {
@@ -660,7 +650,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		bEnableSound = bEnablePopup = false;
 
 	// we're offline or just connecting
-	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE || (db_get_b(0, MODULE, smi.proto, 1) == 0 && !opt.PSMOnConnect))
+	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE || (db_get_b(0, MODULE, szProto, 1) == 0 && !opt.PSMOnConnect))
 		goto skip_notify;
 
 	char dbSetting[128];
@@ -687,14 +677,24 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	}
 
 	// check flags
-	if ((!(templates.PopupSMsgFlags & NOTIFY_REMOVE) && (smi.compare == COMPARE_DEL))
+	if ((!(templates.PopupSMsgFlags & NOTIFY_REMOVE_MESSAGE) && (smi.compare == COMPARE_DEL))
 		|| (!(templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE) && (smi.compare == COMPARE_DIFF)))
 		bEnablePopup = false;
 
 	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled) {
 		smi.proto = szProto;
 		smi.hContact = hContact;
-		smi.cust = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
+		smi.cust = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
+
+		// cut message if needed
+		if (opt.PSMTruncate && (opt.PSMLen > 0) && smi.newstatusmsg && (_tcslen(smi.newstatusmsg) > opt.PSMLen)) {
+			TCHAR buff[MAX_TEXT_LEN + 3];
+			_tcsncpy(buff, smi.newstatusmsg, opt.PSMLen);
+			buff[opt.PSMLen] = 0;
+			_tcscat(buff, _T("..."));
+			mir_free(smi.newstatusmsg);
+			smi.newstatusmsg = mir_tstrdup(buff);
+		}
 
 		TCHAR *str;
 		if (smi.compare == COMPARE_DEL)

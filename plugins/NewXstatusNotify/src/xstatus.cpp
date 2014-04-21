@@ -193,7 +193,7 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 		Template = templates.PopupNewXstatus; break;
 	case NOTIFY_NEW_MESSAGE:
 		Template = templates.PopupNewMsg; break;
-	case NOTIFY_REMOVE:
+	case NOTIFY_REMOVE_XSTATUS:
 		Template = templates.PopupRemove; break;
 	case NOTIFY_OPENING_ML:
 		Template = templates.LogOpening; break;
@@ -216,7 +216,7 @@ void PlayXStatusSound(int action)
 		SkinPlaySound(XSTATUS_SOUND_CHANGED); break;
 	case NOTIFY_NEW_MESSAGE:
 		SkinPlaySound(XSTATUS_SOUND_MSGCHANGED); break;
-	case NOTIFY_REMOVE:
+	case NOTIFY_REMOVE_XSTATUS:
 		SkinPlaySound(XSTATUS_SOUND_REMOVED); break;
 	}
 }
@@ -239,7 +239,7 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 		Template = templates.LogNewXstatus; break;
 	case NOTIFY_NEW_MESSAGE:
 		Template = templates.LogNewMsg; break;
-	case NOTIFY_REMOVE:
+	case NOTIFY_REMOVE_XSTATUS:
 		Template = templates.LogRemove; break;
 	case NOTIFY_OPENING_ML:
 		Template = templates.LogOpening; break;
@@ -286,7 +286,7 @@ void LogChangeToFile(XSTATUSCHANGE *xsc)
 	GetTimeFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("HH':'mm"), stzTime, SIZEOF(stzTime));
 	GetDateFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("dd/MM/yyyy"), stzDate, SIZEOF(stzDate));
 
-	if (xsc->action == NOTIFY_REMOVE)
+	if (xsc->action == NOTIFY_REMOVE_XSTATUS)
 		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s removed %s.\r\n"), stzDate, stzTime, stzName, stzType);
 	else
 		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s changed %s to: %s.\r\n"), stzDate, stzTime, stzName, stzType, xsc->stzTitle);
@@ -456,7 +456,7 @@ int OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	}
 
 	if (opt.EnableLogging && (mwed->uType == MSG_WINDOW_EVT_OPEN) && (templates.LogFlags & NOTIFY_OPENING_ML) && (db_get_b(mwed->hContact, MODULE, "EnableLogging", 1) == 1))
-		mir_forkthread(AddEventThread, (void*)mwed->hContact);
+		mir_forkthread(AddEventThread, (void *)mwed->hContact);
 
 	return 0;
 }
