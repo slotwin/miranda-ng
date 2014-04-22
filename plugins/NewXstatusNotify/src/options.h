@@ -37,6 +37,7 @@ typedef struct tagOPTIONS {
 	BYTE LeftClickAction;
 	BYTE RightClickAction;
 	// IDD_OPT_XPOPUP
+	BYTE PXOnConnect;
 	BYTE PDisableForMusic;
 	BYTE PTruncateMsg;
 	DWORD PMsgLen;

@@ -322,14 +322,14 @@ void GetStatusText(MCONTACT hContact, WORD newStatus, WORD oldStatus, TCHAR *stz
 	}
 }
 
-void BlinkIcon(MCONTACT hContact, char *szProto, WORD status, TCHAR *stzText)
+void BlinkIcon(MCONTACT hContact, char *szProto, HICON hIcon, TCHAR *stzText)
 {
 	CLISTEVENT cle = {0};
 	cle.cbSize = sizeof(cle);
 	cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
 	cle.hContact = hContact;
 	cle.hDbEvent = (HANDLE)hContact;
-	cle.hIcon = (opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, status) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE));
+	cle.hIcon = hIcon;
 	cle.pszService = "UserOnline/Description";
 	cle.ptszTooltip = stzText;
 	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
@@ -429,10 +429,11 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 	}
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
+		HICON hIcon = opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, newStatus) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
 		TCHAR str[256] = {0};
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s is now %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText);
-		BlinkIcon(hContact, szProto, newStatus, str);
+		BlinkIcon(hContact, szProto, hIcon, str);
 		mir_free(str);
 	}
 
@@ -648,10 +649,10 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		bEnableSound = bEnablePopup = false;
 
 	// we're offline or just connecting
-	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE || (db_get_b(0, MODULE, szProto, 1) == 0 && !opt.PSMOnConnect))
+	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE)
 		goto skip_notify;
 
-	char dbSetting[128];
+	char dbSetting[64];
 	mir_snprintf(dbSetting, SIZEOF(dbSetting), "%s_enabled", szProto);
 	// this proto is not set for status message notifications
 	if (db_get_b(NULL, MODULE, dbSetting, 1) == 0)
@@ -677,6 +678,9 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	// check flags
 	if ((!(templates.PopupSMsgFlags & NOTIFY_REMOVE_MESSAGE) && (smi.compare == COMPARE_DEL))
 		|| (!(templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE) && (smi.compare == COMPARE_DIFF)))
+		bEnablePopup = false;
+
+	if (db_get_b(0, MODULE, szProto, 1) == 0 && !opt.PSMOnConnect)
 		bEnablePopup = false;
 
 	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled) {
@@ -706,10 +710,11 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	}
 
 	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled) {
+		HICON hIcon = opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE)) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
 		TCHAR str[256] = {0};
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed status message to %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), smi.newstatusmsg);
-		BlinkIcon(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), str);
+		BlinkIcon(hContact, szProto, hIcon, str);
 		mir_free(str);
 	}
 

@@ -53,7 +53,7 @@ void RemoveLoggedEvents(MCONTACT hContact)
 	}
 }
 
-TCHAR* GetStatusTypeAsString(int type, TCHAR *buff)
+TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 {
 	switch (type) {
 	case TYPE_JABBER_MOOD:
@@ -69,7 +69,7 @@ TCHAR* GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-TCHAR* ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *tmplt, TCHAR *str)
+TCHAR *ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *tmplt, TCHAR *str)
 {
 	TCHAR tmp[1024];
 
@@ -226,8 +226,6 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 		Template = templates.PopupXstatusRemoved; break;
 	case NOTIFY_REMOVE_MESSAGE:
 		Template = templates.PopupMsgRemoved; break;
-	case NOTIFY_OPENING_ML:
-		Template = templates.LogOpening; break;
 	}
 
 	TCHAR stzPopupText[2 * MAX_TEXT_LEN];
@@ -240,17 +238,53 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 	PUAddPopupT(&ppd);
 }
 
-void PlayXStatusSound(int action)
+void BlinkXStatusIcon(XSTATUSCHANGE *xsc)
+{
+	HICON hIcon = NULL;
+	TCHAR str[256] = {0};
+	TCHAR stzType[32];
+	mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed %s"),
+		CallService(MS_CLIST_GETCONTACTDISPLAYNAME, xsc->hContact, GCDNF_TCHAR), GetStatusTypeAsString(xsc->type, stzType));
+
+	if (opt.BlinkIcon_Status) {
+		DBVARIANT dbv;
+		char szSetting[64];
+
+		switch (xsc->type) {
+		case TYPE_JABBER_MOOD:
+		case TYPE_JABBER_ACTIVITY:
+			mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", xsc->szProto, (xsc->type == TYPE_JABBER_MOOD) ? "mood" : "activity", "icon");
+			if (!db_get_s(xsc->hContact, "AdvStatus", szSetting, &dbv)) {
+				hIcon = Skin_GetIcon(dbv.pszVal);
+				db_free(&dbv);
+			}
+			break;
+		case TYPE_ICQ_XSTATUS:
+			{
+				int statusId = db_get_b(xsc->hContact, xsc->szProto, "XStatusId", 0);
+				hIcon = (HICON)CallProtoService(xsc->szProto, PS_GETCUSTOMSTATUSICON, statusId, LR_SHARED);
+			}
+		}
+	}
+
+	if (hIcon == NULL)
+		hIcon = LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
+
+	BlinkIcon(xsc->hContact, xsc->szProto, hIcon, str);
+	mir_free(str);
+}
+
+void PlayXStatusSound(MCONTACT hContact, int action)
 {
 	switch (action) {
 	case NOTIFY_NEW_XSTATUS:
-		SkinPlaySound(XSTATUS_SOUND_CHANGED); break;
+		PlayChangeSound(hContact, XSTATUS_SOUND_CHANGED); break;
 	case NOTIFY_NEW_MESSAGE:
-		SkinPlaySound(XSTATUS_SOUND_MSGCHANGED); break;
+		PlayChangeSound(hContact, XSTATUS_SOUND_MSGCHANGED); break;
 	case NOTIFY_REMOVE_XSTATUS:
-		SkinPlaySound(XSTATUS_SOUND_REMOVED); break;
+		PlayChangeSound(hContact, XSTATUS_SOUND_REMOVED); break;
 	case NOTIFY_REMOVE_MESSAGE:
-		SkinPlaySound(XSTATUS_SOUND_MSGREMOVED); break;
+		PlayChangeSound(hContact, XSTATUS_SOUND_MSGREMOVED); break;
 	}
 }
 
@@ -333,41 +367,50 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 		return;
 
 	BOOL bEnablePopup = true, bEnableSound = true;
+
 	char buff[12] = {0};
-
 	mir_snprintf(buff, SIZEOF(buff), "%d", ID_STATUS_EXTRASTATUS);
-
 	if ((db_get_b(0, MODULE, buff, 1) == 0)
 		|| (db_get_w(xsc->hContact, xsc->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
-		|| (!opt.HiddenContactsToo && db_get_b(xsc->hContact, "CList", "Hidden", 0))
-		|| (opt.TempDisabled)
-		|| (opt.IgnoreEmpty && (xsc->stzTitle == NULL || xsc->stzTitle[0] == '\0') && (xsc->stzText == NULL || xsc->stzText[0] == '\0')))
+		|| (!opt.HiddenContactsToo && (db_get_b(xsc->hContact, "CList", "Hidden", 0) == 1))
+		|| (CallProtoService(xsc->szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE))
 	{
 		FreeXSC(xsc);
 		return;
 	}
 
-	char statusIDs[12], statusIDp[12];
+	// check per-contact ignored events
+	if (db_get_b(xsc->hContact, MODULE, "EnableXStatusNotify", 1) == 0)
+		bEnableSound = bEnablePopup = false;
+
+	// check if our status isn't on autodisable list
 	if (opt.AutoDisable) {
+		char statusIDs[12], statusIDp[12];
 		WORD myStatus = (WORD)CallProtoService(xsc->szProto, PS_GETSTATUS, 0, 0);
 		mir_snprintf(statusIDs, SIZEOF(statusIDs), "s%d", myStatus);
 		mir_snprintf(statusIDp, SIZEOF(statusIDp), "p%d", myStatus);
-		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : TRUE;
-		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : TRUE;
+		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : bEnableSound;
+		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : bEnablePopup;
 	}
 
 	if (!(templates.PopupFlags & xsc->action))
-		bEnableSound = bEnablePopup = false;
+		bEnablePopup = false;
+
+	if (db_get_b(0, MODULE, xsc->szProto, 1) == 0 && !opt.PXOnConnect)
+		bEnablePopup = false;
 
 	int xstatusID = db_get_b(xsc->hContact, xsc->szProto, "XStatusId", 0);
 	if (opt.PDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
 		bEnableSound = bEnablePopup = false;
 
-	if (bEnablePopup && db_get_b(xsc->hContact, MODULE, "EnableXStatusNotify", 1) && db_get_b(0, MODULE, xsc->szProto, 1))
+	if (bEnablePopup && db_get_b(xsc->hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
 		ShowPopup(xsc);
 
-	if (bEnableSound && db_get_b(xsc->hContact, MODULE, "EnableXStatusNotify", 1))
-		PlayXStatusSound(xsc->action);
+	if (bEnableSound && db_get_b(0, "Skin", "UseSound", 1) && db_get_b(xsc->hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled)
+		PlayXStatusSound(xsc->hContact, xsc->action);
+
+	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled)
+		BlinkXStatusIcon(xsc);
 
 	BYTE enableLog = opt.EnableLogging;
 	if (opt.LDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
