@@ -21,11 +21,11 @@
 
 #include "common.h"
 
-void ShowChangePopup(MCONTACT hContact, char *szProto, WORD iconStatus, WORD newStatus, TCHAR *stzText, PLUGINDATA *pdp)
+void ShowChangePopup(MCONTACT hContact, char *szProto, HICON hIcon, WORD newStatus, TCHAR *stzText, PLUGINDATA *pdp)
 {
 	POPUPDATAT ppd = {0};
 	ppd.lchContact = hContact;
-	ppd.lchIcon = LoadSkinnedProtoIcon(szProto, iconStatus);
+	ppd.lchIcon = hIcon;//LoadSkinnedProtoIcon(szProto, iconStatus);
 	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
 
 	// add group name to popup title

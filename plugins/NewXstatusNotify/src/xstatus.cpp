@@ -154,59 +154,32 @@ TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt)
 	return str;
 }
 
-void ShowPopup(XSTATUSCHANGE *xsc)
+void ShowXStatusPopup(XSTATUSCHANGE *xsc)
 {
-	DBVARIANT dbv;
-	char szSetting[64];
-
-	POPUPDATAT ppd = {0};
-	ppd.lchContact = xsc->hContact;
+	HICON hIcon = NULL;
 
 	switch (xsc->type) {
 	case TYPE_JABBER_MOOD:
 	case TYPE_JABBER_ACTIVITY:
-		mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", xsc->szProto, (xsc->type == TYPE_JABBER_MOOD) ? "mood" : "activity", "icon");
-		if (!db_get_s(xsc->hContact, "AdvStatus", szSetting, &dbv)) {
-			ppd.lchIcon = Skin_GetIcon(dbv.pszVal);
-			db_free(&dbv);
+		{
+			DBVARIANT dbv;
+			char szSetting[64];
+			mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", xsc->szProto, (xsc->type == TYPE_JABBER_MOOD) ? "mood" : "activity", "icon");
+			if (!db_get_s(xsc->hContact, "AdvStatus", szSetting, &dbv)) {
+				hIcon = Skin_GetIcon(dbv.pszVal);
+				db_free(&dbv);
+			}
+			break;
 		}
-		break;
 	case TYPE_ICQ_XSTATUS:
 		{
 			int statusId = db_get_b(xsc->hContact, xsc->szProto, "XStatusId", 0);
-			ppd.lchIcon = (HICON)CallProtoService(xsc->szProto, PS_GETCUSTOMSTATUSICON, statusId, LR_SHARED);
+			hIcon = (HICON)CallProtoService(xsc->szProto, PS_GETCUSTOMSTATUSICON, statusId, LR_SHARED);
 		}
 	}
 
-	if (ppd.lchIcon == NULL)
-		ppd.lchIcon = LoadSkinnedProtoIcon(xsc->szProto, db_get_w(xsc->hContact, xsc->szProto, "Status", ID_STATUS_ONLINE));
-
-	switch (opt.Colors) {
-	case POPUP_COLOR_OWN:
-		ppd.colorBack = db_get_dw(0, MODULE, "40081bg", COLOR_BG_AVAILDEFAULT);
-		ppd.colorText = db_get_dw(0, MODULE, "40081tx", COLOR_TX_DEFAULT);
-		break;
-	case POPUP_COLOR_WINDOWS:
-		ppd.colorBack = GetSysColor(COLOR_BTNFACE);
-		ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
-		break;
-	case POPUP_COLOR_POPUP:
-		ppd.colorBack = ppd.colorText = 0;
-		break;
-	}
-
-	_tcsncpy(ppd.lptzContactName, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, xsc->hContact, GSMDF_TCHAR), MAX_CONTACTNAME);
-
-	// add group name to popup title
-	if (opt.ShowGroup) {
-		DBVARIANT dbv;
-		if (!db_get_ts(xsc->hContact, "CList", "Group", &dbv)) {
-			_tcsncat(ppd.lptzContactName, _T(" ("), MAX_CONTACTNAME);
-			_tcsncat(ppd.lptzContactName, dbv.ptszVal, MAX_CONTACTNAME);
-			_tcsncat(ppd.lptzContactName, _T(")"), MAX_CONTACTNAME);
-			db_free(&dbv);
-		}
-	}
+	if (hIcon == NULL)
+		hIcon = LoadSkinnedProtoIcon(xsc->szProto, db_get_w(xsc->hContact, xsc->szProto, "Status", ID_STATUS_ONLINE));
 
 	// cut message if needed
 	if (opt.PTruncateMsg && (opt.PMsgLen > 0) && xsc->stzText && (_tcslen(xsc->stzText) > opt.PMsgLen)) {
@@ -231,12 +204,9 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 	}
 
 	TCHAR *stzPopupText = ReplaceVars(xsc, Template);
-	_tcsncpy(ppd.lptzText, stzPopupText, SIZEOF(ppd.lptzText));
-	mir_free(stzPopupText);
 
-	ppd.PluginWindowProc = PopupDlgProc;
-	ppd.iSeconds = opt.PopupTimeout;
-	PUAddPopupT(&ppd);
+	ShowChangePopup(xsc->hContact, xsc->szProto, hIcon, ID_STATUS_EXTRASTATUS, stzPopupText);
+	mir_free(stzPopupText);
 }
 
 void BlinkXStatusIcon(XSTATUSCHANGE *xsc)
@@ -406,7 +376,7 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 		bEnableSound = bEnablePopup = false;
 
 	if (bEnablePopup && db_get_b(xsc->hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
-		ShowPopup(xsc);
+		ShowXStatusPopup(xsc);
 
 	if (bEnableSound && db_get_b(0, "Skin", "UseSound", 1) && db_get_b(xsc->hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled)
 		PlayXStatusSound(xsc->hContact, xsc->action);

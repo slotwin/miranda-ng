@@ -425,7 +425,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		pdp->newStatus = newStatus;
 		pdp->hAwayMsgHook = NULL;
 		pdp->hAwayMsgProcess = NULL;
-		ShowChangePopup(hContact, szProto, newStatus, newStatus, str, pdp);
+		ShowChangePopup(hContact, szProto, LoadSkinnedProtoIcon(szProto, newStatus), newStatus, str, pdp);
 	}
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
@@ -704,7 +704,9 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		else
 			str = GetStr(&smi, templates.PopupSMsgChanged);
 
-		ShowChangePopup(hContact, szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE), ID_STATUS_STATUSMSG, str);
+		ShowChangePopup(hContact, szProto,
+			LoadSkinnedProtoIcon(szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE)),
+			ID_STATUS_STATUSMSG, str);
 
 		mir_free(str);
 	}

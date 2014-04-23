@@ -397,12 +397,12 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								_tcscat(str, TranslateT("This is status message"));
 							}
 
-							ShowChangePopup(NULL, NULL, i, i, str);
+							ShowChangePopup(NULL, NULL, LoadSkinnedProtoIcon(NULL, i), i, str);
 						}
 						_tcscpy(str, TranslateT("This is extra status"));
-						ShowChangePopup(NULL, NULL, ID_STATUS_ONLINE, ID_STATUS_EXTRASTATUS, str);
+						ShowChangePopup(NULL, NULL, LoadSkinnedProtoIcon(NULL, ID_STATUS_ONLINE), ID_STATUS_EXTRASTATUS, str);
 						_tcscpy(str, TranslateT("This is status message"));
-						ShowChangePopup(NULL, NULL, ID_STATUS_ONLINE, ID_STATUS_STATUSMSG, str);
+						ShowChangePopup(NULL, NULL, LoadSkinnedProtoIcon(NULL, ID_STATUS_ONLINE), ID_STATUS_STATUSMSG, str);
 
 						return FALSE;
 					}
