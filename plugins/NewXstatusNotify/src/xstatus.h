@@ -48,7 +48,7 @@
 #define EVENTTYPE_STATUSCHANGE		25368
 
 // Default templates
-#define DEFAULT_POPUP_CHANGED		TranslateT("changed %n to: %t\n%m")
+#define DEFAULT_POPUP_CHANGED		TranslateT("changed %n to: %t\\n%m")
 #define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %n message to: %m")
 #define DEFAULT_POPUP_REMOVED		TranslateT("removed %n")
 #define DEFAULT_POPUP_MSGREMOVED	TranslateT("removed %n message")

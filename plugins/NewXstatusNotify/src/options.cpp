@@ -60,8 +60,8 @@ void LoadOptions()
 	opt.PopupConnectionTimeout = db_get_dw(0, MODULE, "PopupConnectionTimeout", 15);
 	opt.LeftClickAction		= db_get_b(0, MODULE, "LeftClickAction", 5);
 	opt.RightClickAction	= db_get_b(0, MODULE, "RightClickAction", 1);
-	opt.IgnoreEmpty			= db_get_b(0, MODULE, "IgnoreEmpty", 1);
 	// IDD_OPT_XPOPUP
+	opt.PXOnConnect			= db_get_b(0, MODULE, "PXOnConnect", 0);
 	opt.PDisableForMusic	= db_get_b(0, MODULE, "PDisableForMusic", 1);
 	opt.PTruncateMsg		= db_get_b(0, MODULE, "PTruncateMsg", 0);
 	opt.PMsgLen				= db_get_dw(0, MODULE, "PMsgLen", 64);
@@ -130,8 +130,8 @@ void SaveOptions()
 	db_set_dw(0, MODULE, "PopupConnectionTimeout", opt.PopupConnectionTimeout);
 	db_set_b(0, MODULE, "LeftClickAction", opt.LeftClickAction);
 	db_set_b(0, MODULE, "RightClickAction", opt.RightClickAction);
-	db_set_b(0, MODULE, "IgnoreEmpty", opt.IgnoreEmpty);
 	// IDD_OPT_XPOPUP
+	db_set_b(0, MODULE, "PXOnConnect", opt.PXOnConnect);
 	db_set_b(0, MODULE, "PDisableForMusic", opt.PDisableForMusic);
 	db_set_b(0, MODULE, "PTruncateMsg", opt.PTruncateMsg);
 	db_set_dw(0, MODULE, "PMsgLen", opt.PMsgLen);
@@ -317,7 +317,6 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			CheckDlgButton(hwndDlg, IDC_READAWAYMSG, opt.ReadAwayMsg);
 			CheckDlgButton(hwndDlg, IDC_SHOWPREVIOUSSTATUS, opt.ShowPreviousStatus);
 			CheckDlgButton(hwndDlg, IDC_SHOWGROUP, opt.ShowGroup);
-			CheckDlgButton(hwndDlg, IDC_PUIGNOREREMOVE, opt.IgnoreEmpty);
 
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUT_VALUE, EM_LIMITTEXT, 3, 0);
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUT_VALUE_SPIN, UDM_SETRANGE32, -1, 999);
@@ -448,7 +447,6 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				opt.PopupConnectionTimeout = GetDlgItemInt(hwndDlg, IDC_CONNECTIONTIMEOUT_VALUE, 0, TRUE);
 				opt.LeftClickAction = (BYTE)SendDlgItemMessage(hwndDlg, IDC_STATUS_LC, CB_GETCURSEL, 0, 0);
 				opt.RightClickAction = (BYTE)SendDlgItemMessage(hwndDlg, IDC_STATUS_RC, CB_GETCURSEL, 0, 0);
-				opt.IgnoreEmpty = IsDlgButtonChecked(hwndDlg, IDC_PUIGNOREREMOVE);
 
 				SaveOptions();
 				return TRUE;
@@ -562,6 +560,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			SendDlgItemMessage(hwndDlg, IDC_ED_MSGLEN, EM_LIMITTEXT, 3, 0);
 			SendDlgItemMessage(hwndDlg, IDC_UD_MSGLEN, UDM_SETRANGE, 0, MAKELONG(999, 1));
 
+			CheckDlgButton(hwndDlg, IDC_XONCONNECT, opt.PXOnConnect);
 			CheckDlgButton(hwndDlg, IDC_CHK_DISABLEMUSIC, opt.PDisableForMusic);
 			CheckDlgButton(hwndDlg, IDC_CHK_CUTMSG, opt.PTruncateMsg);
 			SetDlgItemInt(hwndDlg, IDC_ED_MSGLEN, opt.PMsgLen, FALSE);
@@ -640,6 +639,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		case WM_NOTIFY:
 		{
 			if (((LPNMHDR)lParam)->code == PSN_APPLY) {
+				opt.PXOnConnect = IsDlgButtonChecked(hwndDlg, IDC_XONCONNECT);
 				opt.PDisableForMusic = IsDlgButtonChecked(hwndDlg, IDC_CHK_DISABLEMUSIC);
 				opt.PTruncateMsg = IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTMSG);
 				opt.PMsgLen = GetDlgItemInt(hwndDlg, IDC_ED_MSGLEN, 0, FALSE);

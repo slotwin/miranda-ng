@@ -69,7 +69,7 @@ TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-TCHAR *ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *tmplt, TCHAR *str)
+TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt, TCHAR *str)
 {
 	TCHAR tmp[1024];
 
@@ -137,7 +137,8 @@ TCHAR *ReplaceVars(XSTATUSCHANGE *xsc , TCHAR *tmplt, TCHAR *str)
 				break;
 			}
 		}
-		else tmp[0] = tmplt[i], tmp[1] = _T('\0');
+		else
+			tmp[0] = tmplt[i], tmp[1] = _T('\0');
 
 		if (tmp[0] != _T('\0')) {
 			if (lstrlen(tmp) + lstrlen(str) < SIZEOF(str))

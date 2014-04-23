@@ -68,7 +68,6 @@ typedef struct tagOPTIONS {
 	BYTE PSMTruncate;
 	DWORD PSMLen;
 	// OTHER
-	BYTE IgnoreEmpty;
 	BYTE TempDisabled;
 	BYTE PopupAutoDisabled;
 	BYTE SoundAutoDisabled;

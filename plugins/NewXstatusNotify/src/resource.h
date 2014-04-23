@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// ..\res\resource.rc
+// Used by ..\res\resource.rc
 //
 #define IDD_OPT_XPOPUP                  101
 #define IDD_INFO_SOUNDS                 102
@@ -63,6 +63,7 @@
 #define IDC_CHECKMESSAGEWINDOW          1045
 #define IDC_ED_SMSGLEN                  1046
 #define IDC_UD_SMSGLEN                  1047
+#define IDC_XONCONNECT                  1048
 #define IDC_HIDDENCONTACTSTOO           1052
 #define IDC_USEINDIVSOUNDS              1053
 #define IDC_OK                          1055
@@ -162,7 +163,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        114
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_CONTROL_VALUE         1049
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
