@@ -576,7 +576,7 @@ skip_jabber:
 			return 1;
 		}
 	}
-	else if (!strcmp(cws->szSetting, "XStatus")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
+	else if (strstr(cws->szSetting, "XStatus")/* || strcmp(cws->szSetting, "StatusNote") == 0*/) {
 		if (strcmp(cws->szModule, szProto))
 			return 0;
 

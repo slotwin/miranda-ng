@@ -69,13 +69,14 @@ TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt, TCHAR *str)
+TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt)
 {
 	TCHAR tmp[1024];
 
 	if (tmplt == NULL || tmplt[0] == _T('\0'))
 		return NULL;
 
+	TCHAR *str = (TCHAR *)mir_alloc(2048 * sizeof(TCHAR));
 	str[0] = _T('\0');
 	int len = lstrlen(tmplt);
 
@@ -141,7 +142,7 @@ TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt, TCHAR *str)
 			tmp[0] = tmplt[i], tmp[1] = _T('\0');
 
 		if (tmp[0] != _T('\0')) {
-			if (lstrlen(tmp) + lstrlen(str) < SIZEOF(str))
+			if (lstrlen(tmp) + lstrlen(str) < 2044)
 				lstrcat(str, tmp);
 			else {
 				lstrcat(str, _T("..."));
@@ -229,10 +230,9 @@ void ShowPopup(XSTATUSCHANGE *xsc)
 		Template = templates.PopupMsgRemoved; break;
 	}
 
-	TCHAR stzPopupText[2 * MAX_TEXT_LEN];
-	ReplaceVars(xsc, Template, stzPopupText);
+	TCHAR *stzPopupText = ReplaceVars(xsc, Template);
 	_tcsncpy(ppd.lptzText, stzPopupText, SIZEOF(ppd.lptzText));
-	ppd.lptzText[SIZEOF(ppd.lptzText) - 1] = 0;
+	mir_free(stzPopupText);
 
 	ppd.PluginWindowProc = PopupDlgProc;
 	ppd.iSeconds = opt.PopupTimeout;
@@ -313,8 +313,8 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 		Template = templates.LogOpening; break;
 	}
 
-	TCHAR stzLogText[2 * MAX_TEXT_LEN], stzLastLog[2 * MAX_TEXT_LEN];
-	ReplaceVars(xsc, Template, stzLogText);
+	TCHAR *stzLogText, stzLastLog[2 * MAX_TEXT_LEN];
+	stzLogText = ReplaceVars(xsc, Template);
 	DBGetStringDefault(xsc->hContact, MODULE, DB_LASTLOG, stzLastLog, SIZEOF(stzLastLog), _T(""));
 
 	if (!opt.KeepInHistory || !(opt.PreventIdentical && _tcscmp(stzLastLog, stzLogText) == 0)) {
@@ -341,6 +341,7 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 			eventList.insert(dbevent);
 		}
 	}
+	mir_free(stzLogText);
 }
 
 void LogChangeToFile(XSTATUSCHANGE *xsc)
