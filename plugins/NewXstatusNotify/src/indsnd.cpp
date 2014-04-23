@@ -63,7 +63,7 @@ TCHAR *SelectSound(HWND hwndDlg, TCHAR *buff)
 	OPENFILENAME ofn = {0};
 
 	HWND hList = GetDlgItem(hwndDlg, IDC_INDSNDLIST);
-	ListView_GetItemText(hList, ListView_GetNextItem(hList,- 1, LVNI_SELECTED), 1, buff, SIZEOF(buff));
+	ListView_GetItemText(hList, ListView_GetNextItem(hList, -1, LVNI_SELECTED), 1, buff, SIZEOF(buff));
 	if (_tcscmp(buff, TranslateT(DEFAULT_SOUND)) == 0)
 		buff = NULL;
 

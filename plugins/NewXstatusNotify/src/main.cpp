@@ -88,30 +88,20 @@ HANDLE GetIconHandle(char *szIcon)
 	return Skin_GetIconHandle(szSettingName);
 }
 
-static int __inline CheckStr(char *str, int not_empty, int empty) {
+static int __inline CheckStr(char *str, int not_empty, int empty)
+{
 	if (str == NULL || str[0] == '\0')
 		return empty;
 	else
 		return not_empty;
 }
 
-static int __inline CheckStrW(WCHAR *str, int not_empty, int empty) {
+static int __inline CheckStrW(WCHAR *str, int not_empty, int empty)
+{
 	if (str == NULL || str[0] == L'\0')
 		return empty;
 	else
 		return not_empty;
-}
-
-WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage)
-{
-	if (ptr == NULL)
-		return NULL;
-
-	size_t size = strlen(ptr) + 1;
-	WCHAR *tmp = (WCHAR *)mir_alloc(size * sizeof(WCHAR));
-
-	MultiByteToWideChar(CodePage, 0, ptr, -1, tmp, (int)size * sizeof(WCHAR));
-	return tmp;
 }
 
 static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new, char *szSetting) {
@@ -186,31 +176,6 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new, 
 	}
 
 	return ret;
-}
-
-TCHAR* AddCR(const TCHAR *statusmsg)
-{
-	const TCHAR *found;
-	int i = 0, len = lstrlen(statusmsg), j;
-	TCHAR *tmp = (TCHAR *)mir_alloc(1024 * sizeof(TCHAR));
-	*tmp = _T('\0');
-	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
-		j = (int)(found - statusmsg);
-		if (lstrlen(tmp) + j - i + 2 < 1024)
-			tmp = _tcsncat(tmp, statusmsg + i, j - i);
-		else
-			break;
-
-		if (j == 0 || *(statusmsg + j - 1) != _T('\r'))
-			tmp = lstrcat(tmp, _T("\r"));
-
-		tmp = lstrcat(tmp, _T("\n"));
-		i = j + 1;
-	}
-	if (lstrlen(tmp) + len - i + 1 < 1024)
-		tmp = lstrcat(tmp, statusmsg + i);
-
-	return tmp;
 }
 
 TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)

@@ -152,8 +152,6 @@ extern HGENMENU hEnableDisableMenu;
 extern STATUS StatusList[STATUS_COUNT];
 extern STATUS StatusListEx[STATUSEX_COUNT];
 
-bool CheckMsgWnd(MCONTACT hContact);
-TCHAR* AddCR(const TCHAR *statusmsg);
 void BlinkIcon(MCONTACT hContact, char *szProto, HICON hIcon, TCHAR *stzText);
 void PlayChangeSound(MCONTACT hContact, const char *name);
 #endif //COMMON_H

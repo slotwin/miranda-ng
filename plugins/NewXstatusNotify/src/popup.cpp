@@ -64,7 +64,7 @@ void ShowChangePopup(MCONTACT hContact, char *szProto, HICON hIcon, WORD newStat
 
 static int AwayMsgHook(WPARAM wParam, LPARAM lParam, LPARAM pObj)
 {
-	PLUGINDATA *pdp = (PLUGINDATA*)pObj;
+	PLUGINDATA *pdp = (PLUGINDATA *)pObj;
 	if (pdp == NULL)
 		return 0;
 
@@ -82,7 +82,7 @@ static int AwayMsgHook(WPARAM wParam, LPARAM lParam, LPARAM pObj)
 	MCONTACT hContact = PUGetContact(pdp->hWnd);
 	ptrT pstzLast(db_get_tsa(hContact, MODULE, "LastPopupText"));
 
-	TCHAR *tszStatus = (TCHAR*)ack->lParam;
+	TCHAR *tszStatus = (TCHAR *)ack->lParam;
 	if (tszStatus == NULL || *tszStatus == 0)
 		return 0;
 

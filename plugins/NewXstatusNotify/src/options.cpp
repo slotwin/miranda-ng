@@ -461,60 +461,53 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 INT_PTR CALLBACK DlgProcAutoDisableOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-		{
-			TranslateDialogDefault(hwndDlg);
-			CheckDlgButton(hwndDlg, IDC_CHK_PGLOBAL, opt.DisablePopupGlobally);
-			CheckDlgButton(hwndDlg, IDC_CHK_SGLOBAL, opt.DisableSoundGlobally);
-			CheckDlgButton(hwndDlg, IDC_CHK_ONLYGLOBAL, opt.OnlyGlobalChanges);
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		CheckDlgButton(hwndDlg, IDC_CHK_PGLOBAL, opt.DisablePopupGlobally);
+		CheckDlgButton(hwndDlg, IDC_CHK_SGLOBAL, opt.DisableSoundGlobally);
+		CheckDlgButton(hwndDlg, IDC_CHK_ONLYGLOBAL, opt.OnlyGlobalChanges);
 
+		char str[8];
+		for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
+			mir_snprintf(str, SIZEOF(str), "p%d", i);
+			CheckDlgButton(hwndDlg, i, db_get_b(0, MODULE, str, 0));
+		}
+
+		for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
+			mir_snprintf(str, SIZEOF(str), "s%d", i);
+			CheckDlgButton(hwndDlg, (i + 2000), db_get_b(NULL, MODULE, str, 0));
+		}
+
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_OK:
 			char str[8];
+			opt.DisablePopupGlobally = IsDlgButtonChecked(hwndDlg, IDC_CHK_PGLOBAL);
+			opt.DisableSoundGlobally = IsDlgButtonChecked(hwndDlg, IDC_CHK_SGLOBAL);
+			opt.OnlyGlobalChanges = IsDlgButtonChecked(hwndDlg, IDC_CHK_ONLYGLOBAL);
+
 			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
 				mir_snprintf(str, SIZEOF(str), "p%d", i);
-				CheckDlgButton(hwndDlg, i, db_get_b(0, MODULE, str, 0));
+				db_set_b(NULL, MODULE, str, IsDlgButtonChecked(hwndDlg, i));
 			}
 
 			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
 				mir_snprintf(str, SIZEOF(str), "s%d", i);
-				CheckDlgButton(hwndDlg, (i + 2000), db_get_b(NULL, MODULE, str, 0));
+				db_set_b(NULL, MODULE, str, IsDlgButtonChecked(hwndDlg, i + 2000));
 			}
 
-			return TRUE;
-		}
-		case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-				case IDC_OK:
-					char str[8];
-					opt.DisablePopupGlobally = IsDlgButtonChecked(hwndDlg, IDC_CHK_PGLOBAL);
-					opt.DisableSoundGlobally = IsDlgButtonChecked(hwndDlg, IDC_CHK_SGLOBAL);
-					opt.OnlyGlobalChanges = IsDlgButtonChecked(hwndDlg, IDC_CHK_ONLYGLOBAL);
-
-					for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
-						mir_snprintf(str, SIZEOF(str), "p%d", i);
-						db_set_b(NULL, MODULE, str, IsDlgButtonChecked(hwndDlg, i));
-					}
-					for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++) {
-						mir_snprintf(str, SIZEOF(str), "s%d", i);
-						db_set_b(NULL, MODULE, str, IsDlgButtonChecked(hwndDlg, i + 2000));
-					}
-
-					SaveOptions();
-					//Fall through
-				case IDC_CANCEL:
-					DestroyWindow(hwndDlg);
-					break;
-			}
-			break;
-		}
-		case WM_CLOSE:
-		{
+			SaveOptions();
+			//Fall through
+		case IDC_CANCEL:
 			DestroyWindow(hwndDlg);
 			break;
 		}
+		break;
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
 	}
 
 	return FALSE;
@@ -553,7 +546,7 @@ int ResetTemplatesToDefault(HWND hwndDlg)
 INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-		case WM_INITDIALOG:
+	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
 
@@ -594,7 +587,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 			return TRUE;
 		}
-		case WM_COMMAND:
+	case WM_COMMAND:
 		{
 			switch (HIWORD(wParam)) {
 			case BN_CLICKED:
@@ -636,7 +629,7 @@ INT_PTR CALLBACK DlgProcXPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 			return TRUE;
 		}
-		case WM_NOTIFY:
+	case WM_NOTIFY:
 		{
 			if (((LPNMHDR)lParam)->code == PSN_APPLY) {
 				opt.PXOnConnect = IsDlgButtonChecked(hwndDlg, IDC_XONCONNECT);
@@ -749,23 +742,23 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		switch (HIWORD(wParam)) {
 		case BN_CLICKED:
 			switch (LOWORD(wParam)) {
-				case IDC_CHK_CUTSMSG:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_SMSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTSMSG));
+			case IDC_CHK_CUTSMSG:
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ED_SMSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTSMSG));
+				break;
+			case IDC_CHK_NEWSMSG:
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_NEWSMSG));
+				break;
+			case IDC_CHK_SMSGREMOVE:
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE));
+				break;
+			case IDC_BT_VARIABLES:
+				MessageBox(hwndDlg, VARIABLES_SM_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
+				break;
+			case IDC_BT_RESET:
+				if (ResetTemplatesToDefault(hwndDlg) == IDYES)
 					break;
-				case IDC_CHK_NEWSMSG:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TNEWSMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_NEWSMSG));
-					break;
-				case IDC_CHK_SMSGREMOVE:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TSMSGREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_SMSGREMOVE));
-					break;
-				case IDC_BT_VARIABLES:
-					MessageBox(hwndDlg, VARIABLES_SM_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
-					break;
-				case IDC_BT_RESET:
-					if (ResetTemplatesToDefault(hwndDlg) == IDYES)
-						break;
-					else
-						return FALSE;
+				else
+					return FALSE;
 			}
 
 			if (LOWORD(wParam) != IDC_BT_VARIABLES)
@@ -780,8 +773,8 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		return TRUE;
 
 	case WM_NOTIFY:
-		if (((NMHDR*)lParam)->idFrom == IDC_PROTOCOLLIST) {
-			switch (((NMHDR*)lParam)->code) {
+		if (((NMHDR *)lParam)->idFrom == IDC_PROTOCOLLIST) {
+			switch (((NMHDR *)lParam)->code) {
 			case LVN_ITEMCHANGED:
 				{
 					NMLISTVIEW *nmlv = (NMLISTVIEW *)lParam;
@@ -792,7 +785,7 @@ INT_PTR CALLBACK DlgProcSMPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 		}
 
-		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+		if (((LPNMHDR)lParam)->code == PSN_APPLY) {
 			opt.PSMOnConnect = IsDlgButtonChecked(hwndDlg, IDC_ONCONNECT);
 			opt.PSMTruncate = IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTSMSG);
 			opt.PSMLen = GetDlgItemInt(hwndDlg, IDC_ED_SMSGLEN, 0, FALSE);
@@ -850,9 +843,8 @@ void EnableLogControls(HWND hwndDlg, BOOL state)
 
 INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-		case WM_INITDIALOG:
+	switch (msg) {
+	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
 
@@ -893,45 +885,43 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			return TRUE;
 		}
-		case WM_COMMAND:
+	case WM_COMMAND:
 		{
-			switch (HIWORD(wParam))
-			{
-				case BN_CLICKED:
+			switch (HIWORD(wParam)) {
+			case BN_CLICKED:
 				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_CHK_LOGGING:
-							EnableLogControls(hwndDlg, IsDlgButtonChecked(hwndDlg, IDC_CHK_LOGGING) ? TRUE : FALSE);
-							break;
-						case IDC_CHK_CUTMSG:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_MSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTMSG));
-							break;
-						case IDC_CHK_XSTATUSCHANGE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE));
-							break;
-						case IDC_CHK_MSGCHANGE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE));
-							break;
-						case IDC_CHK_REMOVE:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE));
-							break;
-						case IDC_CHK_OPENING:
-							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TOPENING), IsDlgButtonChecked(hwndDlg, IDC_CHK_OPENING));
-							break;
-						case IDC_BT_VARIABLES:
-							MessageBox(hwndDlg, VARIABLES_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
-							break;
-						case IDC_BT_RESET:
-							if (ResetTemplatesToDefault(hwndDlg) == IDYES) {
-								SetDlgItemText(hwndDlg, IDC_ED_TOPENING, DEFAULT_LOG_OPENING);
-								CheckDlgButton(hwndDlg, IDC_CHK_OPENING, 1);
-								EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TOPENING), TRUE);
-							}
-							else
-								return FALSE;
+					switch (LOWORD(wParam)) {
+					case IDC_CHK_LOGGING:
+						EnableLogControls(hwndDlg, IsDlgButtonChecked(hwndDlg, IDC_CHK_LOGGING) ? TRUE : FALSE);
+						break;
+					case IDC_CHK_CUTMSG:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_MSGLEN), IsDlgButtonChecked(hwndDlg, IDC_CHK_CUTMSG));
+						break;
+					case IDC_CHK_XSTATUSCHANGE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGE), IsDlgButtonChecked(hwndDlg, IDC_CHK_XSTATUSCHANGE));
+						break;
+					case IDC_CHK_MSGCHANGE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TCHANGEMSG), IsDlgButtonChecked(hwndDlg, IDC_CHK_MSGCHANGE));
+						break;
+					case IDC_CHK_REMOVE:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TREMOVE), IsDlgButtonChecked(hwndDlg, IDC_CHK_REMOVE));
+						break;
+					case IDC_CHK_OPENING:
+						EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TOPENING), IsDlgButtonChecked(hwndDlg, IDC_CHK_OPENING));
+						break;
+					case IDC_BT_VARIABLES:
+						MessageBox(hwndDlg, VARIABLES_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
+						break;
+					case IDC_BT_RESET:
+						if (ResetTemplatesToDefault(hwndDlg) == IDYES) {
+							SetDlgItemText(hwndDlg, IDC_ED_TOPENING, DEFAULT_LOG_OPENING);
+							CheckDlgButton(hwndDlg, IDC_CHK_OPENING, 1);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_ED_TOPENING), TRUE);
+						}
+						else
+							return FALSE;
 
-							break;
+						break;
 					}
 
 					if (LOWORD(wParam) != IDC_BT_VARIABLES)
@@ -940,7 +930,7 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					break;
 				}
 
-				case EN_CHANGE:
+			case EN_CHANGE:
 				{
 					if ((HWND)lParam == GetFocus())
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -949,7 +939,7 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			}
 			return TRUE;
 		}
-		case WM_NOTIFY:
+	case WM_NOTIFY:
 		{
 			if (((LPNMHDR)lParam)->code == PSN_APPLY) {
 				opt.EnableLogging = IsDlgButtonChecked(hwndDlg, IDC_CHK_LOGGING);

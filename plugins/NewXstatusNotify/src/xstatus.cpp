@@ -69,7 +69,7 @@ TCHAR *GetStatusTypeAsString(int type, TCHAR *buff)
 	return buff;
 }
 
-TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, TCHAR *tmplt)
+TCHAR *ReplaceVars(XSTATUSCHANGE *xsc, const TCHAR *tmplt)
 {
 	TCHAR tmp[1024];
 

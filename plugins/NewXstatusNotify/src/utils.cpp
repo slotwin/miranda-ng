@@ -95,3 +95,40 @@ void LogToFile(TCHAR *stzText)
 		fclose(fp);
 	}
 }
+
+WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage)
+{
+	if (ptr == NULL)
+		return NULL;
+
+	size_t size = strlen(ptr) + 1;
+	WCHAR *tmp = (WCHAR *)mir_alloc(size * sizeof(WCHAR));
+
+	MultiByteToWideChar(CodePage, 0, ptr, -1, tmp, (int)size * sizeof(WCHAR));
+	return tmp;
+}
+
+TCHAR *AddCR(const TCHAR *statusmsg)
+{
+	const TCHAR *found;
+	int i = 0, len = lstrlen(statusmsg), j;
+	TCHAR *tmp = (TCHAR *)mir_alloc(1024 * sizeof(TCHAR));
+	*tmp = _T('\0');
+	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
+		j = (int)(found - statusmsg);
+		if (lstrlen(tmp) + j - i + 2 < 1024)
+			tmp = _tcsncat(tmp, statusmsg + i, j - i);
+		else
+			break;
+
+		if (j == 0 || *(statusmsg + j - 1) != _T('\r'))
+			tmp = lstrcat(tmp, _T("\r"));
+
+		tmp = lstrcat(tmp, _T("\n"));
+		i = j + 1;
+	}
+	if (lstrlen(tmp) + len - i + 1 < 1024)
+		tmp = lstrcat(tmp, statusmsg + i);
+
+	return tmp;
+}

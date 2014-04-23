@@ -22,9 +22,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+bool CheckMsgWnd(MCONTACT hContact);
 int DBGetStringDefault(MCONTACT hContact, const char *szModule, const char *szSetting, TCHAR *setting, int size, const TCHAR *defaultValue);
 void ShowLog(TCHAR *file);
 BOOL StatusHasAwayMessage(char *szProto, int status);
 void LogToFile(TCHAR *stzText);
+WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage);
+TCHAR *AddCR(const TCHAR *statusmsg);
 
 #endif
