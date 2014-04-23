@@ -178,7 +178,8 @@ BEGIN
 END
 
 IDD_OPT_XPOPUP DIALOGEX 0, 0, 305, 230
-STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Notification",IDC_STATIC,3,6,299,50
@@ -246,7 +247,8 @@ BEGIN
 END
 
 IDD_OPT_XLOG DIALOGEX 0, 0, 305, 230
-STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Extra status log",65534,5,6,294,83
@@ -276,7 +278,8 @@ BEGIN
 END
 
 IDD_OPT_SMPOPUP DIALOGEX 0, 0, 305, 228
-STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "General",IDC_STATIC,3,3,299,35
@@ -298,6 +301,44 @@ BEGIN
     LTEXT           "characters",IDC_STATIC,191,25,104,8
     LTEXT           "Template:",IDC_STATIC,22,170,45,8
     LTEXT           "Template:",IDC_STATIC,22,194,45,8
+END
+
+IDD_OPT_LOG DIALOGEX 0, 0, 300, 234
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Log status changes",IDC_STATIC,3,3,294,68
+    CONTROL         "Log status changes to file",IDC_LOGTOFILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,14,280,8
+    CONTROL         "Log status changes to history",IDC_LOGTODB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,25,280,8
+    CONTROL         "Only when message window is open",IDC_LOGTODB_WINOPEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,36,273,8
+    CONTROL         "Remove events from history when closing message window",IDC_LOGTODB_REMOVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,47,266,8
+    CONTROL         "Log previous status too",IDC_LOGPREVIOUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,58,280,8
+    GROUPBOX        "Log status message changes",IDC_STATIC,3,74,294,157
+    CONTROL         "Log status message changes to file",IDC_SMSGLOGTOFILE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,85,280,8
+    CONTROL         "Log status message changes to history",IDC_SMSGLOGTODB,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,96,280,8
+    CONTROL         "Only when message window is open",IDC_SMSGLOGTODB_WINOPEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,107,273,8
+    CONTROL         "Remove events from history when closing message window",IDC_SMSGLOGTODB_REMOVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,118,266,8
+    EDITTEXT        IDC_LOG_TSMSGCHANGED,74,139,216,12,ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    CONTROL         "Variables",IDC_BT_VARIABLES,"MButtonClass",WS_TABSTOP,10,212,16,14
+    CONTROL         "Reset",IDC_BT_RESET,"MButtonClass",WS_TABSTOP,29,212,16,14
+    CONTROL         "Log when contact changes status message",IDC_LOG_SMSGCHANGED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,129,280,8
+    CONTROL         "Log when contact removes status message",IDC_LOG_SMSGREMOVED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,153,280,8
+    EDITTEXT        IDC_LOG_TSMSGREMOVED,74,163,216,12,ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    LTEXT           "Template:",IDC_STATIC,22,139,45,8
+    LTEXT           "Template:",IDC_STATIC,22,163,45,8
+    CONTROL         "Log status message when opening message window",IDC_LOG_SMSGOPENING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,177,280,8
+    EDITTEXT        IDC_LOG_TSMSGOPENING,74,187,216,12,ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    LTEXT           "Template:",IDC_STATIC,22,187,45,8
 END
 
 
@@ -404,6 +445,10 @@ BEGIN
         BOTTOMMARGIN, 227
     END
 
+    IDD_OPT_XLOG, DIALOG
+    BEGIN
+    END
+
     IDD_OPT_SMPOPUP, DIALOG
     BEGIN
         LEFTMARGIN, 3
@@ -413,6 +458,18 @@ BEGIN
         VERTGUIDE, 295
         TOPMARGIN, 3
         BOTTOMMARGIN, 225
+    END
+
+    IDD_OPT_LOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 297
+        VERTGUIDE, 10
+        VERTGUIDE, 17
+        VERTGUIDE, 24
+        VERTGUIDE, 290
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 231
     END
 END
 #endif    // APSTUDIO_INVOKED

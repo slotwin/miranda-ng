@@ -61,6 +61,10 @@
 #define DEFAULT_LOG_REMOVE			TranslateT("removed %n")
 #define DEFAULT_LOG_OPENING			TranslateT("has %n @ %t: %m")
 
+#define DEFAULT_LOG_SMSGCHANGED		TranslateT("changed status message @ %n")
+#define DEFAULT_LOG_SMSGREMOVED		TranslateT("removed status message")
+#define DEFAULT_LOG_SMSGOPENING		TranslateT("has status message @ %n")
+
 // Variables help text
 #define VARIABLES_HELP_TEXT TranslateT("These variables are available:\r\n\r\n\
 %n\textra status name (Xstatus, Mood, Activity)\r\n\

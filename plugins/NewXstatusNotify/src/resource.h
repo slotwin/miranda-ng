@@ -16,6 +16,7 @@
 #define IDI_POPUP                       117
 #define IDD_OPT_SMPOPUP                 117
 #define IDI_SOUND                       118
+#define IDD_OPT_LOG                     118
 #define IDI_XSTATUS                     120
 #define IDI_DISABLEALL                  121
 #define IDI_ENABLEALL                   122
@@ -61,14 +62,29 @@
 #define IDC_INDSNDLIST                  1044
 #define IDC_LOGTODB                     1044
 #define IDC_CHECKMESSAGEWINDOW          1045
+#define IDC_SMSGLOGTODB                 1045
 #define IDC_ED_SMSGLEN                  1046
+#define IDC_LOGTODB_WINOPEN             1046
 #define IDC_UD_SMSGLEN                  1047
+#define IDC_LOGTODB_REMOVE              1047
 #define IDC_XONCONNECT                  1048
+#define IDC_SMSGLOGTODB_WINOPEN         1048
+#define IDC_LOGTOFILE                   1049
+#define IDC_LOGPREVIOUS                 1050
+#define IDC_SMSGLOGTOFILE               1051
 #define IDC_HIDDENCONTACTSTOO           1052
+#define IDC_SMSGLOGTODB_REMOVE          1052
 #define IDC_USEINDIVSOUNDS              1053
+#define IDC_LOG_SMSGCHANGED             1053
+#define IDC_LOG_SMSGREMOVED             1054
 #define IDC_OK                          1055
+#define IDC_LOG_TSMSGCHANGED            1055
 #define IDC_CANCEL                      1056
+#define IDC_LOG_TSMSGREMOVED            1056
 #define IDC_CONFIGUREAUTODISABLE        1057
+#define IDC_LOG_SMSG_OPENING            1057
+#define IDC_LOG_SMSGOPENING             1057
+#define IDC_LOG_TSMSGOPENING            1058
 #define IDC_AUTODISABLE                 1060
 #define IDC_LOG                         1061
 #define IDC_TIMEOUT_VALUE               1066
@@ -161,9 +177,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        114
+#define _APS_NEXT_RESOURCE_VALUE        119
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1049
+#define _APS_NEXT_CONTROL_VALUE         1057
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -42,9 +42,15 @@ void LoadTemplates()
 	DBGetStringDefault(0, MODULE, "TLogChangeMsg", templates.LogNewMsg, SIZEOF(templates.LogNewMsg), DEFAULT_LOG_CHANGEMSG);
 	DBGetStringDefault(0, MODULE, "TLogRemoval", templates.LogRemove, SIZEOF(templates.LogRemove), DEFAULT_LOG_REMOVE);
 	DBGetStringDefault(0, MODULE, "TLogOpening", templates.LogOpening, SIZEOF(templates.LogOpening), DEFAULT_LOG_OPENING);
+
+	DBGetStringDefault(0, MODULE, "TLogSMsgChanged", templates.LogSMsgChanged, SIZEOF(templates.LogSMsgChanged), DEFAULT_LOG_SMSGCHANGED);
+	DBGetStringDefault(0, MODULE, "TLogSMsgRemoved", templates.LogSMsgRemoved, SIZEOF(templates.LogSMsgRemoved), DEFAULT_LOG_SMSGREMOVED);
+	DBGetStringDefault(0, MODULE, "TLogSMsgOpening", templates.LogSMsgOpening, SIZEOF(templates.LogSMsgOpening), DEFAULT_LOG_SMSGOPENING);
+
 	templates.PopupFlags = db_get_b(0, MODULE, "TPopupFlags", NOTIFY_NEW_XSTATUS | NOTIFY_NEW_MESSAGE);
 	templates.PopupSMsgFlags = db_get_b(0, MODULE, "TPopupSMsgFlags", NOTIFY_NEW_MESSAGE);
 	templates.LogFlags = db_get_b(0, MODULE, "TLogFlags", NOTIFY_NEW_XSTATUS | NOTIFY_NEW_MESSAGE | NOTIFY_OPENING_ML);
+	templates.LogSMsgFlags = db_get_b(0, MODULE, "TLogSMsgFlags", NOTIFY_NEW_MESSAGE | NOTIFY_OPENING_ML);
 }
 
 void LoadOptions()
@@ -74,13 +80,22 @@ void LoadOptions()
 	opt.BlinkIcon_Status	= db_get_b(0, MODULE, "BlinkIcon_Status", 0);
 	opt.BlinkIcon_ForMsgs	= db_get_b(0, MODULE, "BlinkIcon_ForMsgs", 0);
 	opt.Log					= db_get_b(0, MODULE, "Log", 0);
-	opt.LogToDB				= db_get_b(0, MODULE, "LogToDB", 0);
 	opt.CheckMessageWindow	= db_get_b(0, MODULE, "CheckMessageWindow", 1);
 	DBGetStringDefault(0, MODULE, "LogFilePath", opt.LogFilePath, MAX_PATH, _T(""));
 	// IDD_AUTODISABLE
 	opt.OnlyGlobalChanges	= db_get_b(0, MODULE, "OnlyGlobalChanges", 0);
 	opt.DisablePopupGlobally = db_get_b(0, MODULE, "DisablePopupGlobally", 0);
 	opt.DisableSoundGlobally = db_get_b(0, MODULE, "DisableSoundGlobally", 0);
+	// IDD_OPT_LOG
+	opt.LogToFile			= db_get_b(0, MODULE, "LogToFile", 0);
+	opt.LogToDB				= db_get_b(0, MODULE, "LogToDB", 0);
+	opt.LogToDB_WinOpen		= db_get_b(0, MODULE, "LogToDB_WinOpen", 1);
+	opt.LogToDB_Remove		= db_get_b(0, MODULE, "LogToDB_Remove", 0);
+	opt.LogPrevious			= db_get_b(0, MODULE, "LogToPrevious", 0);
+	opt.SMsgLogToFile		= db_get_b(0, MODULE, "SMsgLogToFile", 0);
+	opt.SMsgLogToDB			= db_get_b(0, MODULE, "SMsgLogToDB", 0);
+	opt.SMsgLogToDB_WinOpen	= db_get_b(0, MODULE, "SMsgLogToDB_WinOpen", 1);
+	opt.SMsgLogToDB_Remove	= db_get_b(0, MODULE, "SMsgLogToDB_Remove", 0);
 	// IDD_OPT_XLOG
 	opt.EnableLogging		= db_get_b(0, MODULE, "EnableLogging", 0);
 	opt.PreventIdentical	= db_get_b(0, MODULE, "PreventIdentical", 1);
@@ -107,14 +122,21 @@ void SaveTemplates()
 	db_set_ts(0, MODULE, "TPopupMsgRemoved", templates.PopupMsgRemoved);
 	db_set_ts(0, MODULE, "TPopupSMsgChanged", templates.PopupSMsgChanged);
 	db_set_ts(0, MODULE, "TPopupSMsgRemoved", templates.PopupSMsgRemoved);
+
 	db_set_ts(0, MODULE, "TLogDelimiter", templates.LogDelimiter);
 	db_set_ts(0, MODULE, "TLogChange", templates.LogNewXstatus);
 	db_set_ts(0, MODULE, "TLogChangeMsg", templates.LogNewMsg);
 	db_set_ts(0, MODULE, "TLogRemoval", templates.LogRemove);
 	db_set_ts(0, MODULE, "TLogOpening", templates.LogOpening);
+
+	db_set_ts(0, MODULE, "TLogSMsgChanged", templates.LogSMsgChanged);
+	db_set_ts(0, MODULE, "TLogSMsgRemoved", templates.LogSMsgRemoved);
+	db_set_ts(0, MODULE, "TLogSMsgOpening", templates.LogSMsgOpening);
+
 	db_set_b(0, MODULE, "TPopupFlags", templates.PopupFlags);
 	db_set_b(0, MODULE, "TPopupSMsgFlags", templates.PopupSMsgFlags);
 	db_set_b(0, MODULE, "TLogFlags", templates.LogFlags);
+	db_set_b(0, MODULE, "TLogSMsgFlags", templates.LogFlags);
 }
 
 void SaveOptions()
@@ -144,13 +166,22 @@ void SaveOptions()
 	db_set_b(0, MODULE, "BlinkIcon_Status", opt.BlinkIcon_Status);
 	db_set_b(0, MODULE, "BlinkIcon_ForMsgs", opt.BlinkIcon_ForMsgs);
 	db_set_b(0, MODULE, "Log", opt.Log);
-	db_set_b(0, MODULE, "LogToDB", opt.LogToDB);
 	db_set_b(0, MODULE, "CheckMessageWindow", opt.CheckMessageWindow);
 	db_set_ws(0, MODULE, "LogFilePath", opt.LogFilePath);
 	// IDD_AUTODISABLE
 	db_set_b(0, MODULE, "OnlyGlobalChanges", opt.OnlyGlobalChanges);
 	db_set_b(0, MODULE, "DisablePopupGlobally", opt.DisablePopupGlobally);
 	db_set_b(0, MODULE, "DisableSoundGlobally", opt.DisableSoundGlobally);
+	// IDD_OPT_LOG
+	db_set_b(0, MODULE, "LogToFile", opt.LogToFile);
+	db_set_b(0, MODULE, "LogToDB", opt.LogToDB);
+	db_set_b(0, MODULE, "LogToDB_WinOpen", opt.LogToDB_WinOpen);
+	db_set_b(0, MODULE, "LogToDB_Remove", opt.LogToDB_Remove);
+	db_set_b(0, MODULE, "LogPrevious", opt.LogPrevious);
+	db_set_b(0, MODULE, "SMsgLogToFile", opt.SMsgLogToFile);
+	db_set_b(0, MODULE, "SMsgLogToDB", opt.SMsgLogToDB);
+	db_set_b(0, MODULE, "SMsgLogToDB_WinOpen", opt.SMsgLogToDB_WinOpen);
+	db_set_b(0, MODULE, "SMsgLogToDB_Remove", opt.SMsgLogToDB_Remove);
 	// IDD_OPT_XLOG
 	db_set_b(0, MODULE, "EnableLogging", opt.EnableLogging);
 	db_set_b(0, MODULE, "PreventIdentical", opt.PreventIdentical);
@@ -972,6 +1003,171 @@ INT_PTR CALLBACK DlgProcXLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
+INT_PTR CALLBACK DlgProcLogOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+
+			CheckDlgButton(hwndDlg, IDC_LOGTOFILE, opt.LogToFile);
+			CheckDlgButton(hwndDlg, IDC_LOGTODB, opt.LogToDB);
+			CheckDlgButton(hwndDlg, IDC_LOGTODB_WINOPEN, opt.LogToDB_WinOpen);
+			CheckDlgButton(hwndDlg, IDC_LOGTODB_REMOVE, opt.LogToDB_Remove);
+			CheckDlgButton(hwndDlg, IDC_LOGPREVIOUS, opt.LogPrevious);
+			CheckDlgButton(hwndDlg, IDC_SMSGLOGTOFILE, opt.SMsgLogToFile);
+			CheckDlgButton(hwndDlg, IDC_SMSGLOGTODB, opt.SMsgLogToDB);
+			CheckDlgButton(hwndDlg, IDC_SMSGLOGTODB_WINOPEN, opt.SMsgLogToDB_WinOpen);
+			CheckDlgButton(hwndDlg, IDC_SMSGLOGTODB_REMOVE, opt.SMsgLogToDB_Remove);
+
+			//Templates
+			CheckDlgButton(hwndDlg, IDC_LOG_SMSGCHANGED, (templates.LogSMsgFlags & NOTIFY_NEW_MESSAGE) ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_LOG_SMSGREMOVED, (templates.LogSMsgFlags & NOTIFY_REMOVE_MESSAGE) ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_LOG_SMSGOPENING, (templates.LogSMsgFlags & NOTIFY_OPENING_ML) ? 1 : 0);
+
+			SetDlgItemText(hwndDlg, IDC_LOG_TSMSGCHANGED, templates.LogSMsgChanged);
+			SetDlgItemText(hwndDlg, IDC_LOG_TSMSGREMOVED, templates.LogSMsgRemoved);
+			SetDlgItemText(hwndDlg, IDC_LOG_TSMSGOPENING, templates.LogSMsgOpening);
+
+			// Buttons
+			SendDlgItemMessage(hwndDlg, IDC_BT_VARIABLES, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show available variables"), BATF_TCHAR);
+			HICON hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_VARIABLES));
+			SendDlgItemMessage(hwndDlg, IDC_BT_VARIABLES, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+			DestroyIcon(hIcon);
+
+			SendDlgItemMessage(hwndDlg, IDC_BT_RESET, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Reset all templates to default"), BATF_TCHAR);
+			hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESET));
+			SendDlgItemMessage(hwndDlg, IDC_BT_RESET, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+			DestroyIcon(hIcon);
+
+			SendMessage(hwndDlg, WM_USER + 2, (WPARAM)opt.LogToFile || opt.LogToDB, 0);
+			SendMessage(hwndDlg, WM_USER + 3, (WPARAM)opt.SMsgLogToFile || opt.SMsgLogToDB, 0);
+
+			return TRUE;
+		}
+	case WM_COMMAND:
+		{
+			switch (HIWORD(wParam)) {
+			case BN_CLICKED:
+				switch (LOWORD(wParam)) {
+				case IDC_LOGTOFILE:
+				case IDC_LOGTODB:
+					SendMessage(hwndDlg, WM_USER + 2, (WPARAM)IsDlgButtonChecked(hwndDlg, IDC_LOGTOFILE) || IsDlgButtonChecked(hwndDlg, IDC_LOGTODB), 0);
+					break;
+				case IDC_SMSGLOGTOFILE:
+				case IDC_SMSGLOGTODB:
+					SendMessage(hwndDlg, WM_USER + 3, (WPARAM)IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTOFILE) || IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB), 0);
+					break;
+				case IDC_LOGTODB_WINOPEN:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOGTODB_REMOVE), IsDlgButtonChecked(hwndDlg, IDC_LOGTODB_WINOPEN));
+					break;
+				case IDC_SMSGLOGTODB_WINOPEN:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_SMSGLOGTODB_REMOVE), IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB_WINOPEN));
+					break;
+				case IDC_LOG_SMSGCHANGED:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGCHANGED), IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGCHANGED));
+					break;
+				case IDC_LOG_SMSGREMOVED:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGREMOVED), IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGREMOVED));
+					break;
+				case IDC_LOG_SMSGOPENING:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGOPENING), IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGOPENING));
+					break;
+				case IDC_BT_VARIABLES:
+					MessageBox(hwndDlg, VARIABLES_SM_HELP_TEXT, TranslateT("Variables"), MB_OK | MB_ICONINFORMATION);
+					break;
+				case IDC_BT_RESET:
+					if (MessageBox(hwndDlg,
+						TranslateT("Do you want to reset all templates to default?"),
+						TranslateT("Reset templates"),
+						MB_ICONQUESTION | MB_YESNO) == IDYES)
+						SendMessage(hwndDlg, WM_USER + 1, 0, 0);
+					else
+						return FALSE;
+					break;
+				}
+
+				if (LOWORD(wParam) != IDC_BT_VARIABLES)
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+
+				break;
+
+			case EN_CHANGE:
+				if ((HWND)lParam == GetFocus())
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				break;
+			}
+			return TRUE;
+		}
+	case WM_NOTIFY:
+		{
+			if (((LPNMHDR)lParam)->code == PSN_APPLY) {
+				opt.LogToFile = IsDlgButtonChecked(hwndDlg, IDC_LOGTOFILE);
+				opt.LogToDB = IsDlgButtonChecked(hwndDlg, IDC_LOGTODB);
+				opt.LogToDB_WinOpen = IsDlgButtonChecked(hwndDlg, IDC_LOGTODB_WINOPEN);
+				opt.LogToDB_Remove = IsDlgButtonChecked(hwndDlg, IDC_LOGTODB_REMOVE);
+				opt.LogPrevious = IsDlgButtonChecked(hwndDlg, IDC_LOGPREVIOUS);
+				opt.SMsgLogToFile = IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTOFILE);
+				opt.SMsgLogToDB = IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB);
+				opt.SMsgLogToDB_WinOpen = IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB_WINOPEN);
+				opt.SMsgLogToDB_Remove = IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB_REMOVE);
+
+				templates.LogSMsgFlags = 0;
+				templates.LogSMsgFlags |= (IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGCHANGED) ? NOTIFY_NEW_MESSAGE : 0) |
+										(IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGREMOVED) ? NOTIFY_REMOVE_MESSAGE : 0) |
+										(IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGOPENING) ? NOTIFY_OPENING_ML : 0);
+
+				// Templates
+				GetDlgItemText(hwndDlg, IDC_LOG_TSMSGCHANGED, templates.LogSMsgChanged, SIZEOF(templates.LogSMsgChanged));
+				GetDlgItemText(hwndDlg, IDC_LOG_TSMSGREMOVED, templates.LogSMsgRemoved, SIZEOF(templates.LogSMsgRemoved));
+				GetDlgItemText(hwndDlg, IDC_LOG_TSMSGOPENING, templates.LogSMsgOpening, SIZEOF(templates.LogSMsgOpening));
+
+				SaveOptions();
+				SaveTemplates();
+			}
+			return TRUE;
+		}
+	case WM_USER + 1:
+		CheckDlgButton(hwndDlg, IDC_LOG_SMSGCHANGED, 1);
+		CheckDlgButton(hwndDlg, IDC_LOG_SMSGREMOVED, 1);
+		CheckDlgButton(hwndDlg, IDC_LOG_SMSGOPENING, 1);
+
+		SetDlgItemText(hwndDlg, IDC_LOG_TSMSGCHANGED, DEFAULT_LOG_SMSGCHANGED);
+		SetDlgItemText(hwndDlg, IDC_LOG_TSMSGREMOVED, DEFAULT_LOG_SMSGREMOVED);
+		SetDlgItemText(hwndDlg, IDC_LOG_TSMSGOPENING, DEFAULT_LOG_SMSGOPENING);
+
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGCHANGED), TRUE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGREMOVED), TRUE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGOPENING), TRUE);
+
+		return TRUE;
+	case WM_USER + 2:
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOGTODB_WINOPEN), IsDlgButtonChecked(hwndDlg, IDC_LOGTODB));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOGTODB_REMOVE), IsDlgButtonChecked(hwndDlg, IDC_LOGTODB) && IsDlgButtonChecked(hwndDlg, IDC_LOGTODB_WINOPEN));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOGPREVIOUS), wParam);
+
+		return TRUE;
+	case WM_USER + 3:
+		EnableWindow(GetDlgItem(hwndDlg, IDC_SMSGLOGTODB_WINOPEN), IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_SMSGLOGTODB_REMOVE), IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB) && IsDlgButtonChecked(hwndDlg, IDC_SMSGLOGTODB_WINOPEN));
+
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_SMSGCHANGED), wParam);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_SMSGREMOVED), wParam);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_SMSGOPENING), wParam);
+
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGCHANGED), wParam && IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGCHANGED));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGREMOVED), wParam && IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGREMOVED));
+		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG_TSMSGOPENING), wParam && IsDlgButtonChecked(hwndDlg, IDC_LOG_SMSGOPENING));
+
+		EnableWindow(GetDlgItem(hwndDlg, IDC_BT_VARIABLES), wParam);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_BT_RESET), wParam);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 int OptionsInitialize(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { sizeof(odp) };
@@ -983,6 +1179,11 @@ int OptionsInitialize(WPARAM wParam, LPARAM)
 	odp.pszTab = LPGEN("General");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_GENERAL);
 	odp.pfnDlgProc = DlgProcGeneralOpts;
+	Options_AddPage(wParam, &odp);
+
+	odp.pszTab = LPGEN("Logging");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_LOG);
+	odp.pfnDlgProc = DlgProcLogOpts;
 	Options_AddPage(wParam, &odp);
 
 	odp.pszTab = LPGEN("Filtering");

@@ -50,12 +50,22 @@ typedef struct tagOPTIONS {
 	BYTE BlinkIcon_Status;
 	BYTE BlinkIcon_ForMsgs;
 	BYTE Log;
-	BYTE LogToDB, CheckMessageWindow;
+	BYTE CheckMessageWindow;
 	TCHAR LogFilePath[MAX_PATH];
 	// IDD_AUTODISABLE
 	BYTE OnlyGlobalChanges;
 	BYTE DisableSoundGlobally;
 	BYTE DisablePopupGlobally;
+	// IDD_OPT_LOG
+	BYTE LogToFile;
+	BYTE LogToDB;
+	BYTE LogToDB_WinOpen;
+	BYTE LogToDB_Remove;
+	BYTE LogPrevious;
+	BYTE SMsgLogToFile;
+	BYTE SMsgLogToDB;
+	BYTE SMsgLogToDB_WinOpen;
+	BYTE SMsgLogToDB_Remove;
 	// IDD_OPT_XLOG
 	BYTE EnableLogging;
 	BYTE PreventIdentical;
@@ -78,6 +88,7 @@ typedef struct tagTEMPLATES {
 	BYTE PopupFlags;
 	BYTE PopupSMsgFlags;
 	BYTE LogFlags;
+	BYTE LogSMsgFlags;
 	TCHAR PopupXstatusChanged[256];
 	TCHAR PopupMsgChanged[256];
 	TCHAR PopupXstatusRemoved[256];
@@ -89,6 +100,9 @@ typedef struct tagTEMPLATES {
 	TCHAR LogNewMsg[256];
 	TCHAR LogRemove[256];
 	TCHAR LogOpening[256];
+	TCHAR LogSMsgChanged[256];
+	TCHAR LogSMsgRemoved[256];
+	TCHAR LogSMsgOpening[256];
 } TEMPLATES;
 
 int OptionsInitialize(WPARAM wParam, LPARAM lParam);
