@@ -94,7 +94,7 @@
 #define ID_STATUS_MIN			ID_STATUS_OFFLINE
 #define ID_STATUS_MAX			ID_STATUS_OUTTOLUNCH
 #define ID_STATUS_MAX2			ID_STATUS_STATUSMSG
-#define STATUS_COUNT			ID_STATUS_MAX2 - ID_STATUS_MIN
+#define STATUS_COUNT			ID_STATUS_MAX2 - ID_STATUS_MIN + 1
 #define Index(ID_STATUS)		ID_STATUS - ID_STATUS_OFFLINE
 
 #define COLOR_BG_AVAILDEFAULT	RGB(173,206,247)
@@ -125,7 +125,6 @@ typedef struct tagSTATUS
 
 typedef struct {
 	MCONTACT hContact;
-	TCHAR *cust;
 	TCHAR *oldstatusmsg;
 	TCHAR *newstatusmsg;
 	char *proto;
@@ -145,13 +144,17 @@ Cast them to (int) if you need them that way.
 #define MS_STATUSCHANGE_MENUCOMMAND "NewStatusNotify/EnableDisableMenuCommand"
 
 extern OPTIONS opt;
-extern LIST<DBEVENT> eventList;
+extern LIST<DBEVENT> eventListXStatus;
+extern LIST<DBEVENT> eventListStatus;
+extern LIST<DBEVENT> eventListSMsg;
 extern TEMPLATES templates;
 extern HINSTANCE hInst;
 extern HGENMENU hEnableDisableMenu;
 extern STATUS StatusList[STATUS_COUNT];
 extern STATUS StatusListEx[STATUSEX_COUNT];
 
+TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt);
+void LogSMsgToDB(STATUSMSGINFO *smi, const TCHAR *tmplt);
 void BlinkIcon(MCONTACT hContact, char *szProto, HICON hIcon, TCHAR *stzText);
 void PlayChangeSound(MCONTACT hContact, const char *name);
 #endif //COMMON_H

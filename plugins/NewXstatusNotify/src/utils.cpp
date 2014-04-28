@@ -108,27 +108,27 @@ WCHAR *mir_dupToUnicodeEx(char *ptr, UINT CodePage)
 	return tmp;
 }
 
-TCHAR *AddCR(const TCHAR *statusmsg)
+TCHAR *AddCR(const TCHAR *stzText)
 {
 	const TCHAR *found;
-	int i = 0, len = lstrlen(statusmsg), j;
+	int i = 0, len = lstrlen(stzText), j;
 	TCHAR *tmp = (TCHAR *)mir_alloc(1024 * sizeof(TCHAR));
 	*tmp = _T('\0');
-	while ((found = _tcsstr((statusmsg + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
-		j = (int)(found - statusmsg);
+	while ((found = _tcsstr((stzText + i), _T("\n"))) != NULL && _tcslen(tmp) + 1 < 1024) {
+		j = (int)(found - stzText);
 		if (lstrlen(tmp) + j - i + 2 < 1024)
-			tmp = _tcsncat(tmp, statusmsg + i, j - i);
+			tmp = _tcsncat(tmp, stzText + i, j - i);
 		else
 			break;
 
-		if (j == 0 || *(statusmsg + j - 1) != _T('\r'))
+		if (j == 0 || *(stzText + j - 1) != _T('\r'))
 			tmp = lstrcat(tmp, _T("\r"));
 
 		tmp = lstrcat(tmp, _T("\n"));
 		i = j + 1;
 	}
 	if (lstrlen(tmp) + len - i + 1 < 1024)
-		tmp = lstrcat(tmp, statusmsg + i);
+		tmp = lstrcat(tmp, stzText + i);
 
 	return tmp;
 }

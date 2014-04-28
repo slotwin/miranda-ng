@@ -39,6 +39,7 @@
 #define IDC_USEPOPUPCOLORS              1013
 #define IDC_ED_MSGLEN                   1013
 #define IDC_ED_TOPENING                 1018
+#define IDC_ED_TXSTATUSOPENING          1018
 #define IDC_ED_TCHANGE                  1024
 #define IDC_ED_TCHANGEMSG               1025
 #define IDC_ED_TREMOVEMSG               1026
@@ -51,6 +52,7 @@
 #define IDC_CHK_XSTATUSCHANGE           1032
 #define IDC_CHK_OPENING                 1033
 #define IDC_CHK_MSGREMOVE               1033
+#define IDC_CHK_XSTATUSOPENING          1033
 #define IDC_UD_MSGLEN                   1034
 #define IDC_CHK_PGLOBAL                 1035
 #define IDC_CHK_SGLOBAL                 1036
@@ -84,9 +86,19 @@
 #define IDC_CONFIGUREAUTODISABLE        1057
 #define IDC_LOG_SMSG_OPENING            1057
 #define IDC_LOG_SMSGOPENING             1057
+#define IDC_XLOGTODB_REMOVE             1057
 #define IDC_LOG_TSMSGOPENING            1058
+#define IDC_CHK_XSTATUSCHANGED          1058
+#define IDC_CHK_MSGCHANGED              1059
 #define IDC_AUTODISABLE                 1060
+#define IDC_CHK_XSTATUSREMOVED          1060
 #define IDC_LOG                         1061
+#define IDC_ED_TXSTATUSCHANGED          1061
+#define IDC_ED_TXSTATUSREMOVED          1062
+#define IDC_ED_TMSGCHANGED              1063
+#define IDC_CHK_MSGREMOVED              1064
+#define IDC_ED_TMSGCHANGED2             1065
+#define IDC_ED_TMSGREMOVED              1065
 #define IDC_TIMEOUT_VALUE               1066
 #define IDC_BLINKICON                   1067
 #define IDC_CONNECTIONTIMEOUT_VALUE     1067
@@ -124,8 +136,11 @@
 #define IDC_BT_CHOOSELOGFILE            2030
 #define IDC_BT_VIEWLOG                  2031
 #define IDC_CHK_LOGGING                 2034
+#define IDC_XLOGTOFILE                  2034
 #define IDC_CHK_SAVETOHISTORY           2039
+#define IDC_XLOGTODB_WINOPEN            2039
 #define IDC_CHK_PREVENTIDENTICAL        2040
+#define IDC_XLOGTODB                    2040
 #define IDC_CHK_OFFLINE                 40071
 #define IDC_CHK_ONLINE                  40072
 #define IDC_CHK_AWAY                    40073
@@ -179,7 +194,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        119
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1057
+#define _APS_NEXT_CONTROL_VALUE         1064
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

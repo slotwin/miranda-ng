@@ -23,7 +23,9 @@
 
 HINSTANCE hInst;
 
-LIST<DBEVENT> eventList(10);
+LIST<DBEVENT> eventListXStatus(10);
+LIST<DBEVENT> eventListStatus(10);
+LIST<DBEVENT> eventListSMsg(10);
 
 HANDLE hStatusModeChange, hServiceMenu, hHookContactStatusChanged, hToolbarButton;
 HGENMENU hEnableDisableMenu;
@@ -178,7 +180,7 @@ static int CompareStatusMsg(STATUSMSGINFO *smi, DBCONTACTWRITESETTING *cws_new, 
 	return ret;
 }
 
-TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
+TCHAR *GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 {
 	TCHAR tmp[1024];
 
@@ -216,10 +218,18 @@ TCHAR* GetStr(STATUSMSGINFO *n, const TCHAR *tmplt)
 				break;
 
 			case 'c':
-				if (n->cust == NULL || n->cust[0] == _T('\0'))
+				if (n->hContact == NULL)
 					lstrcpyn(tmp, TranslateT("Contact"), SIZEOF(tmp));
 				else
-					lstrcpyn(tmp, n->cust, SIZEOF(tmp));
+					lstrcpyn(tmp, (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)n->hContact, GCDNF_TCHAR), SIZEOF(tmp));
+				break;
+
+			case 's':
+				if (n->hContact == NULL)
+					lstrcpyn(tmp, TranslateT("<unknown>"), SIZEOF(tmp));
+				else
+					
+					lstrcpyn(tmp, StatusList[Index(db_get_w(n->hContact, n->proto, "Status", ID_STATUS_ONLINE))].lpzStandardText, SIZEOF(tmp));
 				break;
 
 			default:
@@ -263,7 +273,36 @@ bool SkipHiddenContact(MCONTACT hContact)
 	return (!opt.HiddenContactsToo && (db_get_b(hContact, "CList", "Hidden", 0) == 1));
 }
 
-void GetStatusText(MCONTACT hContact, WORD newStatus, WORD oldStatus, TCHAR *stzStatusText) {
+void LogSMsgToDB(STATUSMSGINFO *smi, const TCHAR *tmplt)
+{
+	TCHAR *str;
+	str = GetStr(smi, tmplt);
+
+	char *blob = mir_utf8encodeT(str);
+
+	DBEVENTINFO dbei = {0};
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = (DWORD)strlen(blob) + 1;
+	dbei.pBlob = (PBYTE)blob;
+	dbei.eventType = EVENTTYPE_STATUSCHANGE;
+	dbei.flags = DBEF_READ | DBEF_UTF;
+
+	dbei.timestamp = (DWORD)time(NULL);
+	dbei.szModule = MODULE;
+	HANDLE hDBEvent = db_event_add(smi->hContact, &dbei);
+	mir_free(blob);
+	mir_free(str);
+
+	if (opt.SMsgLogToDB_WinOpen && opt.SMsgLogToDB_Remove) {
+		DBEVENT *dbevent = (DBEVENT *)mir_alloc(sizeof(DBEVENT));
+		dbevent->hContact = smi->hContact;
+		dbevent->hDBEvent = hDBEvent;
+		eventListSMsg.insert(dbevent);
+	}
+}
+
+void GetStatusText(MCONTACT hContact, WORD newStatus, WORD oldStatus, TCHAR *stzStatusText)
+{
 	if (opt.UseAlternativeText) {
 		switch (GetGender(hContact)) {
 		case GENDER_MALE:
@@ -344,7 +383,8 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 				db_free(&dbv);
 			}
 		}
-		else db_set_s(hContact, szProto, "LastOnline", szSubProto);
+		else
+			db_set_s(hContact, szProto, "LastOnline", szSubProto);
 
 		if (db_get_b(0, MODULE, szSubProto, 1) == 0)
 			return 0;
@@ -395,11 +435,10 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 
 	if (opt.BlinkIcon && !opt.TempDisabled) {
 		HICON hIcon = opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, newStatus) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
-		TCHAR str[256] = {0};
+		TCHAR str[256];
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s is now %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText);
 		BlinkIcon(hContact, szProto, hIcon, str);
-		mir_free(str);
 	}
 
 	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
@@ -409,7 +448,7 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 			PlayChangeSound(hContact, StatusList[Index(newStatus)].lpzSkinSoundName);
 	}
 
-	if (opt.LogToDB && (!opt.CheckMessageWindow || CheckMsgWnd(hContact))) {
+	if (opt.LogToDB && (!opt.LogToDB_WinOpen || CheckMsgWnd(hContact))) {
 		TCHAR stzStatusText[MAX_SECONDLINE] = {0};
 		GetStatusText(hContact, newStatus, oldStatus, stzStatusText);
 		char *blob = mir_utf8encodeT(stzStatusText);
@@ -425,14 +464,21 @@ int ContactStatusChanged(MCONTACT hContact, WORD oldStatus, WORD newStatus)
 		dbei.szModule = MODULE;
 		HANDLE hDBEvent = db_event_add(hContact, &dbei);
 		mir_free(blob);
+
+		if (opt.LogToDB_WinOpen && opt.LogToDB_Remove) {
+			DBEVENT *dbevent = (DBEVENT *)mir_alloc(sizeof(DBEVENT));
+			dbevent->hContact = hContact;
+			dbevent->hDBEvent = hDBEvent;
+			eventListStatus.insert(dbevent);
+		}
 	}
 
-	if (opt.Log) {
-		TCHAR stzDate[MAX_STATUSTEXT], stzTime[MAX_STATUSTEXT], stzText[1024];
+	if (opt.LogToFile) {
+		TCHAR stzDate[MAX_STATUSTEXT], stzTime[MAX_STATUSTEXT], stzText[MAX_TEXT_LEN];
 
 		GetTimeFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("HH':'mm"), stzTime, SIZEOF(stzTime));
 		GetDateFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("dd/MM/yyyy"), stzDate, SIZEOF(stzDate));
-		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s changed to: %s (was: %s).\r\n"),
+		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s changed status to %s (was %s)\r\n"),
 			stzDate, stzTime, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), StatusList[Index(newStatus)].lpzStandardText,
 			StatusList[Index(oldStatus)].lpzStandardText);
 		LogToFile(stzText);
@@ -586,6 +632,7 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	bool bEnablePopup = true, bEnableSound = true;
 	char *szProto = GetContactProto(hContact);
 
+	smi.proto = szProto;
 	smi.hContact = hContact;
 	smi.compare = CompareStatusMsg(&smi, cws, "LastStatusMsg");
 	if (smi.compare == COMPARE_SAME)
@@ -614,7 +661,8 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		bEnableSound = bEnablePopup = false;
 
 	// we're offline or just connecting
-	if (CallProtoService(szProto, PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE)
+	WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+	if (myStatus == ID_STATUS_OFFLINE)
 		goto skip_notify;
 
 	char dbSetting[64];
@@ -633,7 +681,6 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 	// check if our status isn't on autodisable list
 	if (opt.AutoDisable) {
 		char statusIDs[12], statusIDp[12];
-		WORD myStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 		mir_snprintf(statusIDs, SIZEOF(statusIDs), "s%d", myStatus);
 		mir_snprintf(statusIDp, SIZEOF(statusIDp), "p%d", myStatus);
 		bEnableSound = db_get_b(0, MODULE, statusIDs, 1) ? FALSE : bEnableSound;
@@ -645,19 +692,17 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 		|| (!(templates.PopupSMsgFlags & NOTIFY_NEW_MESSAGE) && (smi.compare == COMPARE_DIFF)))
 		bEnablePopup = false;
 
-	if (db_get_b(0, MODULE, szProto, 1) == 0 && !opt.PSMOnConnect)
+	if (db_get_b(0, MODULE, szProto, 1) == 0 && !opt.PSMsgOnConnect)
 		bEnablePopup = false;
 
 	if (bEnablePopup && db_get_b(hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled) {
-		smi.proto = szProto;
-		smi.hContact = hContact;
-		smi.cust = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)smi.hContact, GCDNF_TCHAR);
-
 		// cut message if needed
-		if (opt.PSMTruncate && (opt.PSMLen > 0) && smi.newstatusmsg && (_tcslen(smi.newstatusmsg) > opt.PSMLen)) {
+		TCHAR *copyText = NULL;
+		if (opt.PSMsgTruncate && (opt.PSMsgLen > 0) && smi.newstatusmsg && (_tcslen(smi.newstatusmsg) > opt.PSMsgLen)) {
 			TCHAR buff[MAX_TEXT_LEN + 3];
-			_tcsncpy(buff, smi.newstatusmsg, opt.PSMLen);
-			buff[opt.PSMLen] = 0;
+			copyText = mir_tstrdup(smi.newstatusmsg);
+			_tcsncpy(buff, smi.newstatusmsg, opt.PSMsgLen);
+			buff[opt.PSMsgLen] = 0;
 			_tcscat(buff, _T("..."));
 			mir_free(smi.newstatusmsg);
 			smi.newstatusmsg = mir_tstrdup(buff);
@@ -674,15 +719,20 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 			ID_STATUS_STATUSMSG, str);
 
 		mir_free(str);
+
+		if (copyText) {
+			mir_free(smi.newstatusmsg);
+			smi.newstatusmsg = mir_tstrdup(copyText);
+			mir_free(copyText);
+		}
 	}
 
 	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled) {
 		HICON hIcon = opt.BlinkIcon_Status ? LoadSkinnedProtoIcon(szProto, db_get_w(hContact, szProto, "Status", ID_STATUS_ONLINE)) : LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
-		TCHAR str[256] = {0};
+		TCHAR str[256];
 		mir_sntprintf(str, SIZEOF(str), TranslateT("%s changed status message to %s"),
 			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), smi.newstatusmsg);
 		BlinkIcon(hContact, szProto, hIcon, str);
-		mir_free(str);
 	}
 
 	if (bEnableSound && db_get_b(0, "Skin", "UseSound", TRUE) && db_get_b(hContact, MODULE, "EnableSounds", 1) && !opt.TempDisabled) {
@@ -692,6 +742,28 @@ int ProcessStatusMessage(DBCONTACTWRITESETTING *cws, MCONTACT hContact)
 			PlayChangeSound(hContact, StatusListEx[ID_STATUS_SMSGCHANGED].lpzSkinSoundName);
 	}
 
+	BOOL bEnableLog = opt.SMsgLogToDB && db_get_b(hContact, MODULE, "EnableSMsgLogging", 1);
+	if (bEnableLog && (!opt.SMsgLogToDB_WinOpen || CheckMsgWnd(hContact)))
+		LogSMsgToDB(&smi, smi.compare == COMPARE_DEL ? templates.LogSMsgRemoved : templates.LogSMsgChanged);
+
+	if (opt.SMsgLogToFile && db_get_b(hContact, MODULE, "EnableSMsgLogging", 1)) {
+		TCHAR stzDate[MAX_STATUSTEXT], stzTime[MAX_STATUSTEXT], stzText[MAX_TEXT_LEN];
+
+		GetTimeFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("HH':'mm"), stzTime, SIZEOF(stzTime));
+		GetDateFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("dd/MM/yyyy"), stzDate, SIZEOF(stzDate));
+
+		TCHAR *str;
+		if (smi.compare == COMPARE_DEL)
+			str = GetStr(&smi, templates.LogSMsgRemoved);
+		else
+			str = GetStr(&smi, templates.LogSMsgChanged);
+
+		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s %s\r\n"), stzDate, stzTime,
+			CallService(MS_CLIST_GETCONTACTDISPLAYNAME, hContact, GCDNF_TCHAR), str);
+
+		LogToFile(stzText);
+		mir_free(str);
+	}
 skip_notify:
 	mir_free(smi.newstatusmsg);
 	mir_free(smi.oldstatusmsg);

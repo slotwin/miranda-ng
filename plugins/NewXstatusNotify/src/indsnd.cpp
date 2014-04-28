@@ -91,7 +91,7 @@ HIMAGELIST GetStatusIconsImgList(char *szProto)
 {
 	HIMAGELIST hList = NULL;
 	if (szProto) {
-		hList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, STATUS_COUNT, 0);
+		hList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, STATUS_COUNT - 1, 0);
 		if (hList != NULL) {
 			for (int i = ID_STATUS_MIN; i <= ID_STATUS_MAX; i++)
 				ImageList_AddIcon(hList, LoadSkinnedProtoIcon(szProto, i));

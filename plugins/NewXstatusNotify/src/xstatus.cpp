@@ -41,13 +41,37 @@ void FreeXSC(XSTATUSCHANGE *xsc)
 	}
 }
 
-void RemoveLoggedEvents(MCONTACT hContact)
+void RemoveLoggedEventsXStatus(MCONTACT hContact)
 {
-	for (int i = eventList.getCount() - 1; i >= 0; i--) {
-		DBEVENT *dbevent = eventList[i];
+	for (int i = eventListXStatus.getCount() - 1; i >= 0; i--) {
+		DBEVENT *dbevent = eventListXStatus[i];
 		if (dbevent->hContact == hContact) {
 			db_event_delete(dbevent->hContact, dbevent->hDBEvent);
-			eventList.remove(i);
+			eventListXStatus.remove(i);
+			mir_free(dbevent);
+		}
+	}
+}
+
+void RemoveLoggedEventsStatus(MCONTACT hContact)
+{
+	for (int i = eventListStatus.getCount() - 1; i >= 0; i--) {
+		DBEVENT *dbevent = eventListStatus[i];
+		if (dbevent->hContact == hContact) {
+			db_event_delete(dbevent->hContact, dbevent->hDBEvent);
+			eventListStatus.remove(i);
+			mir_free(dbevent);
+		}
+	}
+}
+
+void RemoveLoggedEventsSMsg(MCONTACT hContact)
+{
+	for (int i = eventListSMsg.getCount() - 1; i >= 0; i--) {
+		DBEVENT *dbevent = eventListSMsg[i];
+		if (dbevent->hContact == hContact) {
+			db_event_delete(dbevent->hContact, dbevent->hDBEvent);
+			eventListSMsg.remove(i);
 			mir_free(dbevent);
 		}
 	}
@@ -182,10 +206,12 @@ void ShowXStatusPopup(XSTATUSCHANGE *xsc)
 		hIcon = LoadSkinnedProtoIcon(xsc->szProto, db_get_w(xsc->hContact, xsc->szProto, "Status", ID_STATUS_ONLINE));
 
 	// cut message if needed
-	if (opt.PTruncateMsg && (opt.PMsgLen > 0) && xsc->stzText && (_tcslen(xsc->stzText) > opt.PMsgLen)) {
+	TCHAR *copyText = NULL;
+	if (opt.PXMsgTruncate && (opt.PXMsgLen > 0) && xsc->stzText && (_tcslen(xsc->stzText) > opt.PXMsgLen)) {
 		TCHAR buff[MAX_TEXT_LEN + 3];
-		_tcsncpy(buff, xsc->stzText, opt.PMsgLen);
-		buff[opt.PMsgLen] = 0;
+		copyText = mir_tstrdup(xsc->stzText);
+		_tcsncpy(buff, xsc->stzText, opt.PXMsgLen);
+		buff[opt.PXMsgLen] = 0;
 		_tcscat(buff, _T("..."));
 		mir_free(xsc->stzText);
 		xsc->stzText = mir_tstrdup(buff);
@@ -196,17 +222,23 @@ void ShowXStatusPopup(XSTATUSCHANGE *xsc)
 	case NOTIFY_NEW_XSTATUS:
 		Template = templates.PopupXstatusChanged; break;
 	case NOTIFY_NEW_MESSAGE:
-		Template = templates.PopupMsgChanged; break;
+		Template = templates.PopupXMsgChanged; break;
 	case NOTIFY_REMOVE_XSTATUS:
 		Template = templates.PopupXstatusRemoved; break;
 	case NOTIFY_REMOVE_MESSAGE:
-		Template = templates.PopupMsgRemoved; break;
+		Template = templates.PopupXMsgRemoved; break;
 	}
 
 	TCHAR *stzPopupText = ReplaceVars(xsc, Template);
 
 	ShowChangePopup(xsc->hContact, xsc->szProto, hIcon, ID_STATUS_EXTRASTATUS, stzPopupText);
 	mir_free(stzPopupText);
+
+	if (copyText) {
+		mir_free(xsc->stzText);
+		xsc->stzText = mir_tstrdup(copyText);
+		mir_free(copyText);
+	}
 }
 
 void BlinkXStatusIcon(XSTATUSCHANGE *xsc)
@@ -250,44 +282,40 @@ void PlayXStatusSound(MCONTACT hContact, int action)
 	switch (action) {
 	case NOTIFY_NEW_XSTATUS:
 		PlayChangeSound(hContact, XSTATUS_SOUND_CHANGED); break;
-	case NOTIFY_NEW_MESSAGE:
-		PlayChangeSound(hContact, XSTATUS_SOUND_MSGCHANGED); break;
 	case NOTIFY_REMOVE_XSTATUS:
 		PlayChangeSound(hContact, XSTATUS_SOUND_REMOVED); break;
+	case NOTIFY_NEW_MESSAGE:
+		PlayChangeSound(hContact, XSTATUS_SOUND_MSGCHANGED); break;
 	case NOTIFY_REMOVE_MESSAGE:
 		PlayChangeSound(hContact, XSTATUS_SOUND_MSGREMOVED); break;
 	}
 }
 
-void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
+void LogChangeToDB(XSTATUSCHANGE *xsc)
 {
-	// cut message if needed
-	if (opt.LTruncateMsg && (opt.LMsgLen > 0) && xsc->stzText && (_tcslen(xsc->stzText) > opt.LMsgLen)) {
-		TCHAR buff[MAX_TEXT_LEN + 3];
-		_tcsncpy(buff, xsc->stzText, opt.LMsgLen);
-		buff[opt.LMsgLen] = 0;
-		_tcscat(buff, _T("..."));
-		mir_free(xsc->stzText);
-		xsc->stzText = mir_tstrdup(buff);
-	}
+	if (opt.XLogToDB_WinOpen && (CheckMsgWnd(xsc->hContact) == false))
+		return;
 
 	TCHAR *Template = _T("");
 	switch (xsc->action) {
 	case NOTIFY_NEW_XSTATUS:
-		Template = templates.LogNewXstatus; break;
-	case NOTIFY_NEW_MESSAGE:
-		Template = templates.LogNewMsg; break;
+		Template = templates.LogXstatusChanged; break;
 	case NOTIFY_REMOVE_XSTATUS:
-		Template = templates.LogRemove; break;
+		Template = templates.LogXstatusRemoved; break;
+	case NOTIFY_NEW_MESSAGE:
+		Template = templates.LogXMsgChanged; break;
+	case NOTIFY_REMOVE_MESSAGE:
+		Template = templates.LogXMsgRemoved; break;
 	case NOTIFY_OPENING_ML:
-		Template = templates.LogOpening; break;
+		Template = templates.LogXstatusOpening; break;
 	}
 
 	TCHAR *stzLogText, stzLastLog[2 * MAX_TEXT_LEN];
 	stzLogText = ReplaceVars(xsc, Template);
 	DBGetStringDefault(xsc->hContact, MODULE, DB_LASTLOG, stzLastLog, SIZEOF(stzLastLog), _T(""));
 
-	if (!opt.KeepInHistory || !(opt.PreventIdentical && _tcscmp(stzLastLog, stzLogText) == 0)) {
+//	if (!opt.KeepInHistory || !(opt.PreventIdentical && _tcscmp(stzLastLog, stzLogText) == 0)) {
+	if (opt.XLogToDB/* || !(opt.PreventIdentical && _tcscmp(stzLastLog, stzLogText) == 0)*/) {
 		db_set_ws(xsc->hContact, MODULE, DB_LASTLOG, stzLogText);
 
 		char *blob = mir_utf8encodeT(stzLogText);
@@ -304,11 +332,11 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 		HANDLE hDBEvent = db_event_add(xsc->hContact, &dbei);
 		mir_free(blob);
 
-		if (!opt.KeepInHistory) {
+		if (opt.XLogToDB_WinOpen && opt.XLogToDB_Remove) {
 			DBEVENT *dbevent = (DBEVENT *)mir_alloc(sizeof(DBEVENT));
 			dbevent->hContact = xsc->hContact;
 			dbevent->hDBEvent = hDBEvent;
-			eventList.insert(dbevent);
+			eventListXStatus.insert(dbevent);
 		}
 	}
 	mir_free(stzLogText);
@@ -316,21 +344,31 @@ void LogToMessageWindow(XSTATUSCHANGE *xsc, BOOL opening)
 
 void LogChangeToFile(XSTATUSCHANGE *xsc)
 {
-	TCHAR stzType[32], stzDate[32], stzTime[32], stzText[MAX_TEXT_LEN];
-
-	GetStatusTypeAsString(xsc->type, stzType);
-
-	INT_PTR stzName = CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)xsc->hContact, GCDNF_TCHAR);
+	TCHAR stzDate[32], stzTime[32], stzText[MAX_TEXT_LEN];
 
 	GetTimeFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("HH':'mm"), stzTime, SIZEOF(stzTime));
 	GetDateFormat(LOCALE_USER_DEFAULT, 0, NULL,_T("dd/MM/yyyy"), stzDate, SIZEOF(stzDate));
 
-	if (xsc->action == NOTIFY_REMOVE_XSTATUS)
-		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s removed %s.\r\n"), stzDate, stzTime, stzName, stzType);
-	else
-		mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s changed %s to: %s.\r\n"), stzDate, stzTime, stzName, stzType, xsc->stzTitle);
+	TCHAR *Template = _T("");
+	switch (xsc->action) {
+	case NOTIFY_NEW_XSTATUS:
+		Template = templates.LogXstatusChanged; break;
+	case NOTIFY_REMOVE_XSTATUS:
+		Template = templates.LogXstatusRemoved; break;
+	case NOTIFY_NEW_MESSAGE:
+		Template = templates.LogXMsgChanged; break;
+	case NOTIFY_REMOVE_MESSAGE:
+		Template = templates.LogXMsgRemoved; break;
+	}
+
+	TCHAR *stzLogText;
+	stzLogText = ReplaceVars(xsc, Template);
+
+	mir_sntprintf(stzText, SIZEOF(stzText), TranslateT("%s, %s. %s %s\r\n"), stzDate, stzTime,
+		CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)xsc->hContact, GCDNF_TCHAR), stzLogText);
 
 	LogToFile(stzText);
+	mir_free(stzLogText);
 }
 
 void ExtraStatusChanged(XSTATUSCHANGE *xsc)
@@ -338,7 +376,7 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 	if (xsc == NULL)
 		return;
 
-	BOOL bEnablePopup = true, bEnableSound = true;
+	BOOL bEnablePopup = true, bEnableSound = true, bEnableLog = opt.XLogToDB;
 
 	char buff[12] = {0};
 	mir_snprintf(buff, SIZEOF(buff), "%d", ID_STATUS_EXTRASTATUS);
@@ -365,14 +403,14 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 		bEnablePopup = db_get_b(0, MODULE, statusIDp, 1) ? FALSE : bEnablePopup;
 	}
 
-	if (!(templates.PopupFlags & xsc->action))
+	if (!(templates.PopupXFlags & xsc->action))
 		bEnablePopup = false;
 
 	if (db_get_b(0, MODULE, xsc->szProto, 1) == 0 && !opt.PXOnConnect)
 		bEnablePopup = false;
 
 	int xstatusID = db_get_b(xsc->hContact, xsc->szProto, "XStatusId", 0);
-	if (opt.PDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
+	if (opt.PXDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
 		bEnableSound = bEnablePopup = false;
 
 	if (bEnablePopup && db_get_b(xsc->hContact, MODULE, "EnablePopups", 1) && !opt.TempDisabled)
@@ -384,17 +422,16 @@ void ExtraStatusChanged(XSTATUSCHANGE *xsc)
 	if (opt.BlinkIcon && opt.BlinkIcon_ForMsgs && !opt.TempDisabled)
 		BlinkXStatusIcon(xsc);
 
-	BYTE enableLog = opt.EnableLogging;
-	if (opt.LDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
-		enableLog = FALSE;
+	if (opt.XLogDisableForMusic && xsc->type == TYPE_ICQ_XSTATUS && xstatusID == XSTATUS_MUSIC)
+		bEnableLog = false;
 
-	if (!(templates.LogFlags & xsc->action))
-		enableLog = FALSE;
+	if (!(templates.LogXFlags & xsc->action))
+		bEnableLog = false;
 
-	if (enableLog && db_get_b(xsc->hContact, MODULE, "EnableXLogging", 1) && CheckMsgWnd(xsc->hContact))
-		LogToMessageWindow(xsc, FALSE);
+	if (bEnableLog && db_get_b(xsc->hContact, MODULE, "EnableXLogging", 1))
+		LogChangeToDB(xsc);
 
-	if (opt.Log)
+	if (opt.XLogToFile && db_get_b(xsc->hContact, MODULE, "EnableXLogging", 1))
 		LogChangeToFile(xsc);
 
 	FreeXSC(xsc);
@@ -459,11 +496,11 @@ void LogXstatusChange(MCONTACT hContact, char *szProto, int xstatusType, TCHAR *
 {
 	XSTATUSCHANGE *xsc = NewXSC(hContact, szProto, xstatusType, NOTIFY_OPENING_ML, stzTitle[0] ? mir_tstrdup(stzTitle) : NULL, stzText[0] ? mir_tstrdup(stzText) : NULL);
 
-	LogToMessageWindow(xsc, TRUE);
+	LogChangeToDB(xsc);
 	FreeXSC(xsc);
 }
 
-void AddEventThread(void *arg)
+void AddXStatusEventThread(void *arg)
 {
 	MCONTACT hContact = (MCONTACT)arg;
 	TCHAR stzTitle[MAX_TITLE_LEN], stzText[MAX_TEXT_LEN];
@@ -494,17 +531,57 @@ void AddEventThread(void *arg)
 	}
 }
 
+void AddSMsgEventThread(void *arg)
+{
+	MCONTACT hContact = (MCONTACT)arg;
+	STATUSMSGINFO smi;
+
+	smi.hContact = hContact;
+	smi.proto = GetContactProto(hContact);
+	if (smi.proto == NULL)
+		return;
+
+	DBVARIANT dbv;
+	if (!db_get_s(smi.hContact, "CList", "StatusMsg", &dbv, 0)) {
+		switch (dbv.type) {
+		case DBVT_ASCIIZ:
+			smi.newstatusmsg = mir_dupToUnicodeEx(dbv.pszVal, CP_ACP);
+			break;
+		case DBVT_UTF8:
+			smi.newstatusmsg = mir_dupToUnicodeEx(dbv.pszVal, CP_UTF8);
+			break;
+		case DBVT_WCHAR:
+			smi.newstatusmsg = mir_wstrdup(dbv.pwszVal);
+			break;
+		default:
+			smi.newstatusmsg = NULL;
+			break;
+		}
+		db_free(&dbv);
+	}
+
+	LogSMsgToDB(&smi, templates.LogSMsgOpening);
+	mir_free(smi.newstatusmsg);
+}
+
 int OnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowEventData *mwed = (MessageWindowEventData *)lParam;
 
-	if (mwed->uType == MSG_WINDOW_EVT_CLOSE && !opt.KeepInHistory) {
-		RemoveLoggedEvents(mwed->hContact);
-		return 0;
-	}
+	if ((mwed->uType == MSG_WINDOW_EVT_CLOSE) && opt.XLogToDB && opt.XLogToDB_WinOpen && opt.XLogToDB_Remove)
+		RemoveLoggedEventsXStatus(mwed->hContact);
 
-	if (opt.EnableLogging && (mwed->uType == MSG_WINDOW_EVT_OPEN) && (templates.LogFlags & NOTIFY_OPENING_ML) && (db_get_b(mwed->hContact, MODULE, "EnableLogging", 1) == 1))
-		mir_forkthread(AddEventThread, (void *)mwed->hContact);
+	if ((mwed->uType == MSG_WINDOW_EVT_CLOSE) && opt.LogToDB && opt.LogToDB_WinOpen && opt.LogToDB_Remove)
+		RemoveLoggedEventsStatus(mwed->hContact);
+
+	if ((mwed->uType == MSG_WINDOW_EVT_CLOSE) && opt.SMsgLogToDB && opt.SMsgLogToDB_WinOpen && opt.SMsgLogToDB_Remove)
+		RemoveLoggedEventsSMsg(mwed->hContact);
+
+	if ((mwed->uType == MSG_WINDOW_EVT_OPEN) && opt.XLogToDB && (templates.LogXFlags & NOTIFY_OPENING_ML) && db_get_b(mwed->hContact, MODULE, "EnableXLogging", 1))
+		mir_forkthread(AddXStatusEventThread, (void *)mwed->hContact);
+
+	if ((mwed->uType == MSG_WINDOW_EVT_OPEN) && opt.SMsgLogToDB && (templates.LogSMsgFlags & NOTIFY_OPENING_ML) && db_get_b(mwed->hContact, MODULE, "EnableSMsgLogging", 1))
+		mir_forkthread(AddSMsgEventThread, (void *)mwed->hContact);
 
 	return 0;
 }

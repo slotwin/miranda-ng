@@ -49,21 +49,21 @@
 
 // Default templates
 #define DEFAULT_POPUP_CHANGED		TranslateT("changed %n to: %t")
-#define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %n message to: %m")
 #define DEFAULT_POPUP_REMOVED		TranslateT("removed %n")
+#define DEFAULT_POPUP_MSGCHANGED	TranslateT("changed %n message to: %m")
 #define DEFAULT_POPUP_MSGREMOVED	TranslateT("removed %n message")
 #define DEFAULT_POPUP_SMSGCHANGED	TranslateT("changed status message to: %n")
 #define DEFAULT_POPUP_SMSGREMOVED	TranslateT("removed status message")
 
-#define DEFAULT_LOG_DELIMITER		_T(": ")
-#define DEFAULT_LOG_NEW				TranslateT("changed %n @ %t: %m")
-#define DEFAULT_LOG_CHANGEMSG		TranslateT("changed %n message @ %m")
-#define DEFAULT_LOG_REMOVE			TranslateT("removed %n")
+#define DEFAULT_LOG_CHANGED			TranslateT("changed %n @ %t: %m")
+#define DEFAULT_LOG_REMOVED			TranslateT("removed %n")
+#define DEFAULT_LOG_MSGCHANGED		TranslateT("changed %n message @ %m")
+#define DEFAULT_LOG_MSGREMOVED		TranslateT("removed %n message")
 #define DEFAULT_LOG_OPENING			TranslateT("has %n @ %t: %m")
 
 #define DEFAULT_LOG_SMSGCHANGED		TranslateT("changed status message @ %n")
 #define DEFAULT_LOG_SMSGREMOVED		TranslateT("removed status message")
-#define DEFAULT_LOG_SMSGOPENING		TranslateT("has status message @ %n")
+#define DEFAULT_LOG_SMSGOPENING		TranslateT("is %s and has status message @ %n")
 
 // Variables help text
 #define VARIABLES_HELP_TEXT TranslateT("These variables are available:\r\n\r\n\
@@ -78,6 +78,7 @@
 %n\tnew status message\r\n\
 %o\told status message\r\n\
 %c\tcustom nickname\r\n\
+%s\tcurrent status\r\n\
 \\n\tline break\r\n\
 \\t\ttab stop")
 
